@@ -12,12 +12,18 @@ const TestWindow = () => {
   const { testId } = useParams();
   const [time, settime] = useState(0);
   
-  window.addEventListener('visibilitychange', ()=>{
+
+  function handleSwitch(){
     if(document.visibilityState === "hidden"){
         alert(1);
     }
-  })
+  }
+  
 
+  useEffect(() => {
+    window.addEventListener('visibilitychange', handleSwitch);
+    return () =>  {window.removeEventListener('visibilitychange', handleSwitch)}
+  },[]);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -46,7 +52,7 @@ const TestWindow = () => {
   }
 
   return (
-    <div className="test-window">
+    <div className="test-window" id="test-window">
       
       <SidePanel
         questions={questions}
