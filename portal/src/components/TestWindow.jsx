@@ -11,6 +11,13 @@ const TestWindow = () => {
   const [loading, setLoading] = useState(true); 
   const { testId } = useParams();
   const [time, settime] = useState(0);
+  
+  window.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState === "hidden"){
+        alert(1);
+    }
+  })
+
 
   useEffect(() => {
     const fetchQuestions = async () => {
