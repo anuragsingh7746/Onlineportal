@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import SidePanel from "./SidePanel";
 import QuestionDisplay from "./QuestionDisplay";
-import {useNavigate, useParams} from 'react-router-dom';
+import { useNavigate, useParams} from 'react-router-dom';
+import DisableBackButton from "./DisableBackButton";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000"; 
 
@@ -10,10 +11,9 @@ const TestWindow = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [loading, setLoading] = useState(true); 
   const { testId } = useParams();
-  const [time, settime] = useState(0);
+  const [time, setTime] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState([]);
   const navigate  = useNavigate();
-  
 
   function handleSwitch(){
     if(document.visibilityState === "hidden"){
@@ -34,7 +34,21 @@ const TestWindow = () => {
         const data = await response.json(); 
         setQuestions(data.questionIds); 
         setLoading(false); 
-        settime(data.time*60*1000);
+        let storedDeadline = localStorage.getItem(`test_${testId}_deadline`);
+
+        if (!storedDeadline) {
+          const newDeadline = Date.now() + data.time * 60 * 1000; 
+          localStorage.setItem(`test_${testId}_deadline`, newDeadline);
+          setTime(newDeadline - Date.now());  
+        } else {
+          const remainingTime = storedDeadline - Date.now();
+          if (remainingTime <= 0) {
+            localStorage.removeItem(`test_${testId}_deadline`);
+            navigate("/Dashboard"); 
+          } else {
+            setTime(remainingTime); 
+          }
+        }
         setSelectedOptions(Array(data.questionIds.length).fill(null));
       } catch (error) {
         console.error("Error fetching questions:", error); 
@@ -44,13 +58,14 @@ const TestWindow = () => {
       fetchQuestions();
     }
     
-  }, [testId]);
+  }, [testId, navigate]);
 
   const handleQuestionChange = (index) => {
       setCurrentQuestion(index);
   };
 
   const submithandle = () =>{
+      localStorage.removeItem(`test_${testId}_deadline`);
       navigate('/Dashboard');
   };
 
@@ -66,7 +81,7 @@ const TestWindow = () => {
 
   return (
     <div className="test-window" id="test-window">
-      
+      <DisableBackButton/>  
       <SidePanel
         questions={questions}
         currentQuestion={currentQuestion}

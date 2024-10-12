@@ -5,7 +5,7 @@ import Timer from "./timer";
 const SidePanel = ({ questions, currentQuestion, onQuestionChange, time, submithandle}) => {
   return (
     <div className="side-panel">
-      <Timer time= {time} />
+      <Timer time= {time} submithandle={submithandle} />
       <h3>Questions</h3>
       <ul>
         {questions.map((question, index) => (

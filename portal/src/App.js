@@ -6,16 +6,27 @@ import Dashboard from './components/Dashboard';
 import TestWindow from './components/TestWindow';
 
 function App() {
-  const [IsAuthenticated, SetIsAuthenticated] = useState(false);
-  const handlelogin = () =>{
+  const [IsAuthenticated, SetIsAuthenticated] = useState(
+    () => localStorage.getItem('isAuthenticated') === 'true'
+  );
+
+
+  const handlelogin = () => {
     SetIsAuthenticated(true);
+    localStorage.setItem('isAuthenticated', 'true');
   };
+
+  const handleLogout = () => {
+    SetIsAuthenticated(false);
+    localStorage.removeItem('isAuthenticated'); 
+  };
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element = {<LoginWindow onlogin = {handlelogin}/>}/>
-        <Route path="/Dashboard" element = {IsAuthenticated ? <Dashboard/> : <Navigate to="/"/>}/>
-        <Route path="/TestWindow/:testId" element = {<TestWindow/>}/>
+        <Route path="/" element={<LoginWindow onlogin={handlelogin} />} />
+        <Route path="/Dashboard" element={IsAuthenticated ? <Dashboard onLogout={handleLogout} /> : <Navigate to="/" />} />
+        <Route path="/TestWindow/:testId" element={IsAuthenticated ? <TestWindow /> : <Navigate to="/" />} />
       </Routes>
     </Router>
   );

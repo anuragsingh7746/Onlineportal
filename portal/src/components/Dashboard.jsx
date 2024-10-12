@@ -5,10 +5,15 @@ import 'reactjs-popup/dist/index.css';
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000"; 
 
-const Dashboard = () =>{
+const Dashboard = ({onLogout}) =>{
     const [availableTests, setavailableTests] = useState([]);
     const [isLoading, setisLoading] = useState(true);
     const navigate = useNavigate();
+
+    const handlelogouttotal = () => {
+        onLogout();
+        navigate('/');
+    };
 
     useEffect(() =>{
         const fetchdashboard = async () =>{
@@ -37,6 +42,7 @@ const Dashboard = () =>{
     return (
         <div style={{ padding: '20px' }}>
             <h1>Student Dashboard</h1>
+            <button onClick={handlelogouttotal}>Logout</button>
             <h2>Available Tests</h2>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
