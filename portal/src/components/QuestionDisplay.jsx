@@ -1,12 +1,7 @@
 // QuestionDisplay.jsx
 import React, { useState } from "react";
 
-const QuestionDisplay = ({ question, currentQuestion, totalQuestions }) => {
-  const [selectedOption, setSelectedOption] = useState(null);
-
-  const handleOptionChange = (option) => {
-    setSelectedOption(option);
-  };
+const QuestionDisplay = ({ question, currentQuestion, totalQuestions, selectedOption, onOptionChange }) => {
 
   return (
     <div className="question-display">
@@ -20,7 +15,7 @@ const QuestionDisplay = ({ question, currentQuestion, totalQuestions }) => {
                 type="radio"
                 value={option}
                 checked={selectedOption === option}
-                onChange={() => handleOptionChange(option)}
+                onChange={() => onOptionChange(option)}
               />
               {option}
             </label>

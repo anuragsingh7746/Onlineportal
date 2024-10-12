@@ -2,7 +2,7 @@
 import React from "react";
 import Timer from "./timer";
 
-const SidePanel = ({ questions, currentQuestion, onQuestionChange, time }) => {
+const SidePanel = ({ questions, currentQuestion, onQuestionChange, time, submithandle}) => {
   return (
     <div className="side-panel">
       <Timer time= {time} />
@@ -19,9 +19,15 @@ const SidePanel = ({ questions, currentQuestion, onQuestionChange, time }) => {
           </li>
         ))}
       </ul>
-      {currentQuestion>=0 && currentQuestion<questions.length -1 ? <button onClick={ () => onQuestionChange(currentQuestion+1)}>Next</button> :  <button></button>}
-      {currentQuestion>0 && currentQuestion<questions.length ? <button onClick={ () => onQuestionChange(currentQuestion-1)}>Prev</button> :  <button></button>}
-      
+      {currentQuestion < questions.length - 1 && (
+        <button onClick={() => onQuestionChange(currentQuestion + 1)}>Next</button>
+      )}
+
+      {currentQuestion > 0 && (
+        <button onClick={() => onQuestionChange(currentQuestion - 1)}>Prev</button>
+      )}
+
+      <button onClick={() => submithandle()}>Submit</button>
       
     </div>
   );

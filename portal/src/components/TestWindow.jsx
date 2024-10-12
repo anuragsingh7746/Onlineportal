@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import SidePanel from "./SidePanel";
 import QuestionDisplay from "./QuestionDisplay";
-import {useParams} from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000"; 
 
@@ -11,6 +11,8 @@ const TestWindow = () => {
   const [loading, setLoading] = useState(true); 
   const { testId } = useParams();
   const [time, settime] = useState(0);
+  const [selectedOptions, setSelectedOptions] = useState([]);
+  const navigate  = useNavigate();
   
 
   function handleSwitch(){
@@ -33,6 +35,7 @@ const TestWindow = () => {
         setQuestions(data.questionIds); 
         setLoading(false); 
         settime(data.time*60*1000);
+        setSelectedOptions(Array(data.questionIds.length).fill(null));
       } catch (error) {
         console.error("Error fetching questions:", error); 
       }
@@ -47,6 +50,16 @@ const TestWindow = () => {
       setCurrentQuestion(index);
   };
 
+  const submithandle = () =>{
+      navigate('/Dashboard');
+  };
+
+  const handleOptionChange = (questionIndex, option) => {
+    const updatedOptions = [...selectedOptions];
+    updatedOptions[questionIndex] = option;
+    setSelectedOptions(updatedOptions);
+  };
+
   if (loading) {
     return <div>Loading questions...</div>;
   }
@@ -59,12 +72,15 @@ const TestWindow = () => {
         currentQuestion={currentQuestion}
         onQuestionChange={handleQuestionChange}
         time = {time}
+        submithandle = {submithandle}
       />
     
       <QuestionDisplay
         question={questions[currentQuestion]}
         currentQuestion={currentQuestion}
         totalQuestions={questions.length}
+        selectedOption={selectedOptions[currentQuestion]}
+        onOptionChange={(option) => handleOptionChange(currentQuestion, option)}
       />
       
     </div>
