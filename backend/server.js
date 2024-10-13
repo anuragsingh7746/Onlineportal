@@ -5,21 +5,22 @@ const connectDB = require("./config/db");
 const questionRoutes = require("./api/questionRoutes");
 const testRoutes = require("./api/testRoutes");
 const taketestRoutes = require("./api/taketestRoutes");
-dotenv.config();  // Load environment variables
+const loginRoutes = require("./api/loginroutes");
+const logRoutes = require("./api/logRoutes");
+dotenv.config();  
 
 const app = express();
 
-// Middleware
-app.use(express.json());  // Parse JSON bodies
-app.use(cors());  // Enable CORS for frontend communication
+app.use(express.json()); 
+app.use(cors());  
 
-// Database connection
 connectDB();
 
-// API Routes
 app.use("/api/questions", questionRoutes);
 app.use("/api/dashboard", testRoutes);
 app.use("/api/test", taketestRoutes);
+app.use("/api/login", loginRoutes);
+app.use("/api/testlog", logRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

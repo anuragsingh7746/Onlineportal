@@ -2,19 +2,40 @@ import React, { useState } from "react";
 import "../login.css";
 import { useNavigate } from "react-router-dom";
 
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000"; 
+
 const LoginWindow = ({onlogin}) => {
     const [Username, setUSername] = useState('');
     const [Password, setPassword] = useState('');
     const navigate = useNavigate();
 
-    const handlelogin = (event) =>{
+    const handlelogin = async (event) =>{
         event.preventDefault();
-        if(Username === 'admin' && Password === 'password'){
-            onlogin();
-            navigate('/Dashboard');
-        }
-        else{
-            alert('Invalid credentials');
+        try{
+            const response = await fetch(`${API_URL}/api/login`,{
+                method : 'POST',
+                headers : {
+                    'Content-Type' : 'application/json',
+                },
+                body : JSON.stringify({
+                    username : Username,
+                    password : Password,
+                }),
+            });
+
+            const data = await response.json();
+
+            if(!response.ok){
+                alert(data.message);
+            }
+            else{
+                onlogin();
+                localStorage.setItem(`username`,Username);
+                navigate('/Dashboard');
+            }
+
+        }catch(error){
+            console.error('Error logging in:', error);
         }
     };
 

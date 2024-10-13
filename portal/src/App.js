@@ -24,7 +24,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<LoginWindow onlogin={handlelogin} />} />
+        <Route path="/" element={IsAuthenticated ? <Dashboard onLogout={handleLogout} /> :<LoginWindow onlogin={handlelogin} />} />
         <Route path="/Dashboard" element={IsAuthenticated ? <Dashboard onLogout={handleLogout} /> : <Navigate to="/" />} />
         <Route path="/TestWindow/:testId" element={IsAuthenticated ? <TestWindow /> : <Navigate to="/" />} />
       </Routes>

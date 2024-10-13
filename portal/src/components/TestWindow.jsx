@@ -15,17 +15,14 @@ const TestWindow = () => {
   const [selectedOptions, setSelectedOptions] = useState([]);
   const navigate = useNavigate();
 
-  // Wrap logactivity with useCallback to ensure it does not trigger unnecessary re-renders
   const logactivity = useCallback((action) => {
     const logs = JSON.parse(localStorage.getItem(`test_${testId}_logs`)) || [];
     const timestamp = new Date().toISOString();
     const entry = { action, timestamp };
     logs.push(entry);
-    console.log(logs);
     localStorage.setItem(`test_${testId}_logs`, JSON.stringify(logs)); 
   }, [testId]);
 
-  // Handle visibility change for tab switch detection
   useEffect(() => {
     const handleSwitch = () => {
       if (document.visibilityState === "hidden") {
@@ -91,18 +88,48 @@ const TestWindow = () => {
     logactivity(`Selected question ${index}`);
   };
 
-  const submithandle = () => {
-    localStorage.removeItem(`test_${testId}_deadline`);
-    localStorage.removeItem(`test_${testId}_selectedOptions`);
+  const submithandle = async() => {
     logactivity(`Submitted Test`);
-    localStorage.removeItem(`test_${testId}_logs`);
-    localStorage.removeItem(`test_${testId}_teststarted`);
+    try{
+      const logs = JSON.parse(localStorage.getItem(`test_${testId}_logs`)) || [];
+      const username = localStorage.getItem('username');
+      const data = {
+        username, logs
+      };
 
-    setQuestions([]);
-    setSelectedOptions([]);
-    setTime(0);
-    setCurrentQuestion(0);
-    navigate('/Dashboard');
+      const response = await fetch(`${API_URL}/api/testlog/${testId}/logs`, {
+        method : 'POST',
+        headers : {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send logs to the backend');
+      }
+  
+      
+
+      localStorage.removeItem(`test_${testId}_deadline`);
+      localStorage.removeItem(`test_${testId}_selectedOptions`);
+      
+      localStorage.removeItem(`test_${testId}_logs`);
+      localStorage.removeItem(`test_${testId}_teststarted`);
+
+      setQuestions([]);
+      setSelectedOptions([]);
+      setTime(0);
+      setCurrentQuestion(0);
+
+
+
+      navigate('/Dashboard');
+      
+    }catch(error){
+      console.error("Error during submission:", error);
+    }
+    
   };
 
   const handleOptionChange = (questionIndex, option) => {
