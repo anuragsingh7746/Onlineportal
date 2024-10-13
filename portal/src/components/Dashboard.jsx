@@ -20,7 +20,6 @@ const Dashboard = ({onLogout}) =>{
             try{
                 const response = await fetch(`${API_URL}/api/dashboard`);
                 const data = await response.json();
-                console.log(data);
                 setavailableTests(data);
                 setisLoading(false);
             } catch (error){

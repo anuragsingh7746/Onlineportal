@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import SidePanel from "./SidePanel";
 import QuestionDisplay from "./QuestionDisplay";
-import { useNavigate, useParams} from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import DisableBackButton from "./DisableBackButton";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000"; 
@@ -13,19 +13,31 @@ const TestWindow = () => {
   const { testId } = useParams();
   const [time, setTime] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState([]);
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
 
-  function handleSwitch(){
-    if(document.visibilityState === "hidden"){
-        alert(1);
-    }
-  }
-  
+  // Wrap logactivity with useCallback to ensure it does not trigger unnecessary re-renders
+  const logactivity = useCallback((action) => {
+    const logs = JSON.parse(localStorage.getItem(`test_${testId}_logs`)) || [];
+    const timestamp = new Date().toISOString();
+    const entry = { action, timestamp };
+    logs.push(entry);
+    console.log(logs);
+    localStorage.setItem(`test_${testId}_logs`, JSON.stringify(logs)); 
+  }, [testId]);
 
+  // Handle visibility change for tab switch detection
   useEffect(() => {
+    const handleSwitch = () => {
+      if (document.visibilityState === "hidden") {
+        logactivity(`Tab Switched`);
+      }
+    };
+
     window.addEventListener('visibilitychange', handleSwitch);
-    return () =>  {window.removeEventListener('visibilitychange', handleSwitch)}
-  },[]);
+    return () => {
+      window.removeEventListener('visibilitychange', handleSwitch);
+    };
+  }, [logactivity]);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -34,8 +46,8 @@ const TestWindow = () => {
         const data = await response.json(); 
         setQuestions(data.questionIds); 
         setLoading(false); 
-        let storedDeadline = localStorage.getItem(`test_${testId}_deadline`);
 
+        let storedDeadline = localStorage.getItem(`test_${testId}_deadline`);
         if (!storedDeadline) {
           const newDeadline = Date.now() + data.time * 60 * 1000; 
           localStorage.setItem(`test_${testId}_deadline`, newDeadline);
@@ -49,35 +61,62 @@ const TestWindow = () => {
             setTime(remainingTime); 
           }
         }
-        setSelectedOptions(Array(data.questionIds.length).fill(null));
+
+        const storedOptions = localStorage.getItem(`test_${testId}_selectedOptions`);
+        if (!storedOptions) {
+          setSelectedOptions(Array(data.questionIds.length).fill(null));
+        } else {
+          setSelectedOptions(JSON.parse(storedOptions));
+        }
+
+        const started = localStorage.getItem(`test_${testId}_teststarted`);
+        if (!started) {
+          const currtime = Date.now();
+          localStorage.setItem(`test_${testId}_teststarted`, currtime);
+          logactivity(`Test Started`);
+        }
+
       } catch (error) {
-        console.error("Error fetching questions:", error); 
+        console.error("Error fetching questions:", error);
       }
     };
-    if(testId){
+
+    if (testId) {
       fetchQuestions();
     }
-    
-  }, [testId, navigate]);
+  }, [testId, navigate, logactivity]);
 
   const handleQuestionChange = (index) => {
-      setCurrentQuestion(index);
+    setCurrentQuestion(index);
+    logactivity(`Selected question ${index}`);
   };
 
-  const submithandle = () =>{
-      localStorage.removeItem(`test_${testId}_deadline`);
-      navigate('/Dashboard');
+  const submithandle = () => {
+    localStorage.removeItem(`test_${testId}_deadline`);
+    localStorage.removeItem(`test_${testId}_selectedOptions`);
+    logactivity(`Submitted Test`);
+    localStorage.removeItem(`test_${testId}_logs`);
+    localStorage.removeItem(`test_${testId}_teststarted`);
+
+    setQuestions([]);
+    setSelectedOptions([]);
+    setTime(0);
+    setCurrentQuestion(0);
+    navigate('/Dashboard');
   };
 
   const handleOptionChange = (questionIndex, option) => {
     const updatedOptions = [...selectedOptions];
-    if(option === "unclear"){
+    if (option === "unclear") {
       updatedOptions[questionIndex] = null;
-    }
-    else{
+      logactivity(`Cleared option for question ${questionIndex}`);
+    } else {
       updatedOptions[questionIndex] = option;
+      logactivity(`Selected option ${option} for question ${questionIndex}`);
     }
     setSelectedOptions(updatedOptions);
+    localStorage.setItem(`test_${testId}_selectedOptions`, JSON.stringify(updatedOptions));
+    
   };
 
   if (loading) {
@@ -86,13 +125,13 @@ const TestWindow = () => {
 
   return (
     <div className="test-window" id="test-window">
-      <DisableBackButton/>  
+      <DisableBackButton />  
       <SidePanel
         questions={questions}
         currentQuestion={currentQuestion}
         onQuestionChange={handleQuestionChange}
-        time = {time}
-        submithandle = {submithandle}
+        time={time}
+        submithandle={submithandle}
       />
     
       <QuestionDisplay
@@ -102,7 +141,6 @@ const TestWindow = () => {
         selectedOption={selectedOptions[currentQuestion]}
         onOptionChange={(option) => handleOptionChange(currentQuestion, option)}
       />
-      
     </div>
   );
 };
