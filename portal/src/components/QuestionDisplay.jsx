@@ -1,5 +1,5 @@
 // QuestionDisplay.jsx
-import React, { useState } from "react";
+import React from "react";
 
 const QuestionDisplay = ({ question, currentQuestion, totalQuestions, selectedOption, onOptionChange }) => {
 
@@ -22,6 +22,7 @@ const QuestionDisplay = ({ question, currentQuestion, totalQuestions, selectedOp
           </div>
         ))}
       </div>
+      <button onClick={() => onOptionChange("inclear")}>Unclear</button>
     </div>
   );
 };

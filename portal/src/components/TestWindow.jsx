@@ -71,7 +71,12 @@ const TestWindow = () => {
 
   const handleOptionChange = (questionIndex, option) => {
     const updatedOptions = [...selectedOptions];
-    updatedOptions[questionIndex] = option;
+    if(option === "unclear"){
+      updatedOptions[questionIndex] = null;
+    }
+    else{
+      updatedOptions[questionIndex] = option;
+    }
     setSelectedOptions(updatedOptions);
   };
 
