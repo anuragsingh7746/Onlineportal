@@ -9,6 +9,18 @@ const logSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  centerId: {
+    type: String,
+    required: true,
+  },
+  deviceId: {
+    type: String,
+    required: true,
+  },
+  testLocation: {
+    type: String,
+    required: true,
+  },
   logs: [
     {
       action: {

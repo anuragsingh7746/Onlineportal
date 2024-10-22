@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from "react-router-dom";
+import "../styles/timer.css";
 
 
 const Timer = ({ time, submithandle }) => {
@@ -31,50 +32,23 @@ const Timer = ({ time, submithandle }) => {
     return () => clearInterval(interval);
   }, [getTime]);
 
-  const timerContainerStyle = {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: '10px',  
-  };
-
-  const boxStyle = {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: '10px',
-    border: '2px solid #ddd',
-    borderRadius: '5px',
-    minWidth: '30px',
-    backgroundColor: '#f0f0f0',  
-  };
-
-  const textStyle = {
-    fontSize: '10px',
-    color: '#555',
-  };
-
-  const timeStyle = {
-    fontSize: '15px',
-    fontWeight: 'bold',
-    margin: 0,
-  };
-
   return (
-    <div style={timerContainerStyle}>
-      <div style={boxStyle}>
-        <p style={timeStyle}>{hours < 10 ? "0" + hours : hours}</p>
-        <span style={textStyle}>Hours</span>
+    <div className="timer-container">
+      <div className="timer-box">
+        <p>{hours < 10 ? "0" + hours : hours}</p>
+        <span>Hours</span>
       </div>
-      <div style={boxStyle}>
-        <p style={timeStyle}>{minutes < 10 ? "0" + minutes : minutes}</p>
-        <span style={textStyle}>Minutes</span>
+      <div className="timer-box">
+        <p>{minutes < 10 ? "0" + minutes : minutes}</p>
+        <span>Minutes</span>
       </div>
-      <div style={boxStyle}>
-        <p style={timeStyle}>{seconds < 10 ? "0" + seconds : seconds}</p>
-        <span style={textStyle}>Seconds</span>
+      <div className="timer-box">
+        <p>{seconds < 10 ? "0" + seconds : seconds}</p>
+        <span>Seconds</span>
       </div>
     </div>
+
+
   );
 };
 

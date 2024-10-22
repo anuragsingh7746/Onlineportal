@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import SidePanel from "./SidePanel";
 import QuestionDisplay from "./QuestionDisplay";
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import DisableBackButton from "./DisableBackButton";
-
+import "../styles/Testwindow.css"
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000"; 
 
 const TestWindow = () => {
@@ -14,6 +14,9 @@ const TestWindow = () => {
   const [time, setTime] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState([]);
   const navigate = useNavigate();
+
+  const location = useLocation();
+  const { formData } = location.state || {}; 
 
   const logactivity = useCallback((action) => {
     const logs = JSON.parse(localStorage.getItem(`test_${testId}_logs`)) || [];
@@ -88,32 +91,41 @@ const TestWindow = () => {
     logactivity(`Selected question ${index}`);
   };
 
-  const submithandle = async() => {
+  const submithandle = async () => {
     logactivity(`Submitted Test`);
-    try{
+    try {
       const logs = JSON.parse(localStorage.getItem(`test_${testId}_logs`)) || [];
       const username = localStorage.getItem('username');
+
+      if (!formData) {
+        console.error("Form data not found!");
+        return;
+      }
+
+      const { centerId, deviceId, testLocation } = formData;
+
       const data = {
-        username, logs
+        username,
+        logs,
+        centerId,   
+        deviceId,  
+        testLocation 
       };
 
       const response = await fetch(`${API_URL}/api/testlog/${testId}/logs`, {
-        method : 'POST',
-        headers : {
+        method: 'POST',
+        headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to send logs to the backend');
+        throw new Error('Failed to send logs and form data to the backend');
       }
-  
-      
 
       localStorage.removeItem(`test_${testId}_deadline`);
       localStorage.removeItem(`test_${testId}_selectedOptions`);
-      
       localStorage.removeItem(`test_${testId}_logs`);
       localStorage.removeItem(`test_${testId}_teststarted`);
 
@@ -122,14 +134,11 @@ const TestWindow = () => {
       setTime(0);
       setCurrentQuestion(0);
 
-
-
       navigate('/Dashboard');
       
-    }catch(error){
+    } catch (error) {
       console.error("Error during submission:", error);
     }
-    
   };
 
   const handleOptionChange = (questionIndex, option) => {
@@ -143,7 +152,6 @@ const TestWindow = () => {
     }
     setSelectedOptions(updatedOptions);
     localStorage.setItem(`test_${testId}_selectedOptions`, JSON.stringify(updatedOptions));
-    
   };
 
   if (loading) {

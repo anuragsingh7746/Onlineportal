@@ -1,15 +1,14 @@
-// QuestionDisplay.jsx
 import React from "react";
+import "../styles/Questiondisplay.css"; // Import the external CSS
 
 const QuestionDisplay = ({ question, currentQuestion, totalQuestions, selectedOption, onOptionChange }) => {
-
   return (
     <div className="question-display">
       <h2>{`Question ${currentQuestion + 1} of ${totalQuestions}`}</h2>
-      <p>{question.text}</p>
+      <p className="question-text">{question.text}</p>
       <div className="options">
         {question.options.map((option, index) => (
-          <div key={index}>
+          <div key={index} className="option">
             <label>
               <input
                 type="radio"
@@ -22,7 +21,7 @@ const QuestionDisplay = ({ question, currentQuestion, totalQuestions, selectedOp
           </div>
         ))}
       </div>
-      <button onClick={() => onOptionChange("inclear")}>Unclear</button>
+      <button className="unclear-button" onClick={() => onOptionChange("unclear")}>Unclear</button>
     </div>
   );
 };

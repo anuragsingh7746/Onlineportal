@@ -1,0 +1,98 @@
+.side-panel {
+    background-color: #ffffff; /* Simple white background */
+    color: #333; /* Dark text for better contrast */
+    padding: 20px;
+    width: 15%; /* Adjusted width */
+    height: 100vh; /* Full viewport height */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.side-panel-title {
+    font-size: 1.4em;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: bold;
+    color: #333; /* Ensure title text is visible */
+}
+
+.question-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.question-list li {
+    margin-bottom: 10px;
+}
+
+.question-button {
+    background-color: #f8f8f8; /* Light background for buttons */
+    color: #333 !important; /* Dark text for visibility */
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    font-size: 1em;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.question-button.active {
+    background-color: #007bff !important; /* Blue background for active button */
+    color: #ffffff !important; /* White text for active button */
+    border: 1px solid #007bff !important;
+}
+
+.question-button:hover {
+    background-color: #e0e0e0 !important; /* Hover background */
+    color: #333 !important; /* Dark text on hover */
+    border: 1px solid #ddd;
+}
+
+/* Buttons at the bottom */
+.navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.nav-button {
+    background-color: #007bff !important; /* Ensure blue background for nav button */
+    color: white !important; /* Ensure white text is visible */
+    border: none !important;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 1.1em;
+}
+
+.nav-button:hover {
+    background-color: #0056b3 !important; /* Darker blue on hover */
+    color: white !important; /* White text on hover */
+}
+
+.submit-button {
+    background-color: #28a745 !important; /* Ensure green background for submit */
+    color: white !important; /* Ensure white text for visibility */
+    border: none !important;
+    padding: 12px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+    background-color: #218838 !important; /* Darker green on hover */
+    color: white !important; /* Ensure white text on hover */
+}

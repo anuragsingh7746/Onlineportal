@@ -1,16 +1,19 @@
 const Log = require('../models/Logs');
 
 const logs = async(req, res) =>{
-    const { username, logs } = req.body;
+    const { username, logs, centerId, deviceId, testLocation  } = req.body;
     const { testId } = req.params;
 
-    if (!username || !logs) {
+    if (!username || !logs || !centerId || !deviceId || !testLocation) {
         return res.status(400).json({ message: 'Username and logs are required' });
     }
     try{
         const newLog = new Log({
         username,
         testId,
+        centerId, 
+        deviceId, 
+        testLocation,
         logs,
         });
     

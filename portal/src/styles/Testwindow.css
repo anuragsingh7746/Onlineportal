@@ -1,0 +1,9 @@
+.test-window {
+    display: flex;
+    justify-content: space-between;
+    height: 100vh; /* Make sure it takes up the full viewport height */
+    width: 100%;
+    background-color: #f4f6f9; /* Light background to contrast the panel */
+    padding: 20px;
+    box-sizing: border-box;
+}
