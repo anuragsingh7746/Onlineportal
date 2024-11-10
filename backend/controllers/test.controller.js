@@ -27,13 +27,11 @@ const getUpcomingUnregisteredTests = async (req, res) => {
 
     // Get the current date and time
     const currentTime = new Date();
-
-    // Find all tests that are not in the excludedTestIds and have a start_time greater than the current time
+    
     const upcomingUnregisteredTests = await Test.find({
       _id: { $nin: Array.from(excludedTestIds) },
       start_time: { $gt: currentTime },
     });
-
     // Return unregistered and ungiven upcoming tests
     res.status(200).json(upcomingUnregisteredTests);
   } catch (error) {
