@@ -48,6 +48,7 @@ const takeTest = async (req, res) => {
     // Return the questions with options
     res.status(200).json({
       message: 'Test is ready to take.',
+      duration: test.duration,
       questions: questions.map((q) => ({
         _id: q._id,
         question_text: q.question_text,
