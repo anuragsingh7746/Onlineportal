@@ -12,7 +12,7 @@ const login = async (req, res) => {
   try {
     // Find user by username
     const user = await User.findOne({ username });
-    const data = [user.username, user.role, user.registered_tests, user.given_tests];
+    const data = [user._id, user.username, user.role, user.registered_tests, user.given_tests];
     // Check if user exists
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
