@@ -35,6 +35,7 @@ const enrollInTest = async (req, res) => {
     // Add the test to the user's registered_tests array
     user.registered_tests.push({
       test_id: test._id,
+      test_name: test.test_name,
       center_id: randomCenter._id,
       city: randomCenter.city,
       state: randomCenter.state,

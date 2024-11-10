@@ -30,7 +30,7 @@ const getUpcomingUnregisteredTests = async (req, res) => {
     
     const upcomingUnregisteredTests = await Test.find({
       _id: { $nin: Array.from(excludedTestIds) },
-      start_time: { $gt: currentTime },
+      end_time: { $lt: currentTime },
     });
     // Return unregistered and ungiven upcoming tests
     res.status(200).json(upcomingUnregisteredTests);

@@ -22,6 +22,9 @@ const userSchema = new Schema({
       type: Schema.Types.ObjectId,
       ref: 'Test',
     },
+    test_name: {
+      type:String,
+    },
     center_id: {
       type: Schema.Types.ObjectId,
       ref: 'Center',
