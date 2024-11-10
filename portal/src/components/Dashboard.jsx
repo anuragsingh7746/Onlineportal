@@ -8,16 +8,14 @@ import TestDetailsForm from './TestDetailsForm';
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const Dashboard = ({ onLogout }) => {
-    const [tab, setTab] = useState("available"); // Tab state for 'available', 'registered', 'given'
+    const [tab, setTab] = useState("available");
     const [availableTests, setAvailableTests] = useState([]);
+    const [registeredTests, setRegisteredTests] = useState(JSON.parse(localStorage.getItem('registered_tests')) || []);
+    const [givenTests, setGivenTests] = useState(JSON.parse(localStorage.getItem('given_tests')) || []);
     const [isLoading, setIsLoading] = useState(true);
     const [showTestForm, setShowTestForm] = useState(false);
     const [selectedTestId, setSelectedTestId] = useState(null);
     const navigate = useNavigate();
-
-    // Retrieve registered and given tests from localStorage
-    const registeredTests = JSON.parse(localStorage.getItem('registered_tests')) || [];
-    const givenTests = JSON.parse(localStorage.getItem('given_tests')) || [];
     const userid = localStorage.getItem('userid');
 
     const handleLogoutTotal = () => {
@@ -29,14 +27,12 @@ const Dashboard = ({ onLogout }) => {
     useEffect(() => {
         const fetchDashboard = async () => {
             try {
-                const response = await fetch(`${API_URL}/api/get_test/tests/unregistered/upcoming`, {
+                const response = await fetch(`${API_URL}/api/get_tests`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        userId: userid,
-                    }),
+                    body: JSON.stringify({ userId: userid }),
                 });
                 const data = await response.json();
                 setAvailableTests(data);
@@ -53,7 +49,7 @@ const Dashboard = ({ onLogout }) => {
 
     const handleEnroll = async (testId) => {
         try {
-            const response = await fetch(`${API_URL}/api/tests/enroll`, {
+            const response = await fetch(`${API_URL}/api/enroll`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -63,12 +59,23 @@ const Dashboard = ({ onLogout }) => {
                     testId: testId,
                 }),
             });
-
+    
             const data = await response.json();
+            
             if (response.ok) {
                 alert(data.message || 'Enrolled successfully!');
-                // Optionally update the available tests by refetching or filtering the enrolled test
+                
+                // Use the registered_test returned in the response
+                const { registered_test } = data;
+    
+                // Remove the test from availableTests
                 setAvailableTests(availableTests.filter(test => test._id !== testId));
+    
+                // Add the registered_test from the response to registeredTests
+                setRegisteredTests([...registeredTests, registered_test]);
+    
+                // Update registered tests in localStorage
+                localStorage.setItem('registered_tests', JSON.stringify([...registeredTests, registered_test]));
             } else {
                 alert(data.message || 'Failed to enroll.');
             }
@@ -82,8 +89,23 @@ const Dashboard = ({ onLogout }) => {
         setShowTestForm(true); 
     };
 
-    const handleSubmitTestDetails = (formData) => {
-        navigate(`/TestWindow/${selectedTestId}`, { state: { formData } });
+    const handleSubmitTestDetails = () => {
+        // Navigate to test-taking window
+        navigate(`/TestWindow/${selectedTestId}`);
+        handleCompleteTest(selectedTestId);  // Move test to givenTests after completion
+    };
+
+    const handleCompleteTest = (testId) => {
+        // Move test from registeredTests to givenTests
+        const completedTest = registeredTests.find(test => test.test_id === testId);
+        setRegisteredTests(registeredTests.filter(test => test.test_id !== testId));
+        setGivenTests([...givenTests, { ...completedTest, score: 0 }]); // Assume a default score of 0 or set as appropriate
+
+        // Update registered and given tests in localStorage
+        localStorage.setItem('registered_tests', JSON.stringify(registeredTests.filter(test => test.test_id !== testId)));
+        localStorage.setItem('given_tests', JSON.stringify([...givenTests, { ...completedTest, score: 0 }]));
+        
+        setShowTestForm(false);  // Close test details form
     };
 
     const handleCancelTest = () => {
@@ -153,7 +175,7 @@ const Dashboard = ({ onLogout }) => {
                         <tbody>
                             {registeredTests.map((test, index) => (
                                 <tr key={index}>
-                                    <td className="table-cell">{test.test_id}</td>
+                                    <td className="table-cell">{test.test_name}</td>
                                     <td className="table-cell">{test.city}</td>
                                     <td className="table-cell">{test.state}</td>
                                     <td className="table-cell">
@@ -174,8 +196,6 @@ const Dashboard = ({ onLogout }) => {
                             <tr>
                                 <th className="table-header">Test ID</th>
                                 <th className="table-header">Score</th>
-                                <th className="table-header">City</th>
-                                <th className="table-header">State</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -183,8 +203,6 @@ const Dashboard = ({ onLogout }) => {
                                 <tr key={index}>
                                     <td className="table-cell">{test.test_id}</td>
                                     <td className="table-cell">{test.score}</td>
-                                    <td className="table-cell">{test.city}</td>
-                                    <td className="table-cell">{test.state}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -192,7 +210,7 @@ const Dashboard = ({ onLogout }) => {
                 </div>
             )}
 
-            {/* Test details form popup for registering a test */}
+            {/* Popup message for starting the test */}
             {showTestForm && (
                 <Popup open={showTestForm} modal closeOnDocumentClick={false}>
                     <TestDetailsForm onSubmit={handleSubmitTestDetails} onCancel={handleCancelTest} />

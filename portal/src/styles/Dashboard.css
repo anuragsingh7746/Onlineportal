@@ -1,8 +1,11 @@
 .dashboard-container {
     padding: 20px;
     font-family: Arial, sans-serif;
-    max-width: 1200px;
+    max-width: 2500px;
     margin: 0 auto;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .dashboard-heading {
@@ -28,12 +31,42 @@
     background-color: #ff1a1a;
 }
 
+/* Tab Button Styling */
+.tab-buttons {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.tab-buttons button {
+    background-color: #ddd;
+    color: #333;
+    border: none;
+    padding: 10px 20px;
+    margin: 0 5px;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.tab-buttons button:hover {
+    background-color: #ccc;
+}
+
+.tab-buttons .active-tab {
+    background-color: #4CAF50;
+    color: white;
+}
+
 .sub-heading {
     font-size: 1.8em;
     color: #555;
     margin-bottom: 15px;
+    text-align: center;
 }
 
+/* Table Styling */
 .dashboard-table {
     width: 100%;
     border-collapse: collapse;
@@ -59,24 +92,35 @@
     color: #555;
 }
 
-.take-test-button {
-    background-color: #4CAF50;
-    color: white;
+/* Button Styling */
+.take-test-button, .enroll-button, .completed-button {
     border: none;
     padding: 10px 15px;
     border-radius: 5px;
+    font-size: 1em;
     cursor: pointer;
     transition: background-color 0.3s ease;
+}
+
+.take-test-button {
+    background-color: #4CAF50;
+    color: white;
 }
 
 .take-test-button:hover {
     background-color: #45a049;
 }
 
+.enroll-button {
+    background-color: #007BFF;
+    color: white;
+}
+
+.enroll-button:hover {
+    background-color: #0069d9;
+}
+
 .completed-button {
     background-color: #999;
     color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
 }

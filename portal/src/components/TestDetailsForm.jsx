@@ -1,85 +1,22 @@
-import React, { useState } from 'react';
+import React from "react";
 import '../styles/form.css';
 
 const TestDetailsForm = ({ onSubmit, onCancel }) => {
-  const [centerId, setCenterId] = useState('');
-  const [deviceId, setDeviceId] = useState('');
-  const [testLocation, setTestLocation] = useState('');
-  const [error, setError] = useState('');
-
-  const isValidAlphanumeric = (value) => /^[a-zA-Z0-9]+$/.test(value);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    setError('');
-
-    if (!isValidAlphanumeric(centerId)) {
-      setError('Center ID must be alphanumeric');
-      return;
-    }
-    if (!isValidAlphanumeric(deviceId)) {
-      setError('Device ID must be alphanumeric');
-      return;
-    }
-    if (testLocation.trim() === '') {
-      setError('Test location cannot be empty');
-      return;
-    }
-
-    const formData = {
-      centerId,
-      deviceId,
-      testLocation,
+    const handleStartTest = () => {
+        onSubmit(); // Trigger the test start
     };
 
-    onSubmit(formData); 
-  };
-
-  return (
-    <div className='modal'>
-      <form onSubmit={handleSubmit}>
-        <h3>Enter Test Details</h3>
-
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-
-        <div>
-          <label>Center ID:</label>
-          <input
-            type="text"
-            value={centerId}
-            onChange={(e) => setCenterId(e.target.value)}
-            required
-            placeholder="Alphanumeric ID"
-          />
+    return (
+        <div className="test-details-container">
+            <h2 className="test-details-heading">Ready to Start Your Test</h2>
+            <p className="test-details-message">You are going to start a test. Please be prepared.</p>
+            
+            <div className="test-details-actions">
+                <button onClick={handleStartTest} className="start-test-button">Start Test</button>
+                <button onClick={onCancel} className="cancel-test-button">Cancel</button>
+            </div>
         </div>
-        <div>
-          <label>Device ID:</label>
-          <input
-            type="text"
-            value={deviceId}
-            onChange={(e) => setDeviceId(e.target.value)}
-            required
-            placeholder="Alphanumeric ID"
-          />
-        </div>
-        <div>
-          <label>Test Location:</label>
-          <input
-            type="text"
-            value={testLocation}
-            onChange={(e) => setTestLocation(e.target.value)}
-            required
-            placeholder="Enter location"
-          />
-        </div>
-        <div>
-          <button type="submit">Start Test</button>
-          <button type="button" onClick={onCancel}>Cancel</button>
-        </div>
-      </form>
-    </div>
-  );
+    );
 };
 
 export default TestDetailsForm;

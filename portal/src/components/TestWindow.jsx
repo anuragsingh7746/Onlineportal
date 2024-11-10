@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import SidePanel from "./SidePanel";
 import QuestionDisplay from "./QuestionDisplay";
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import DisableBackButton from "./DisableBackButton";
 import "../styles/Testwindow.css"
+
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000"; 
 
 const TestWindow = () => {
@@ -14,9 +15,6 @@ const TestWindow = () => {
   const [time, setTime] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState([]);
   const navigate = useNavigate();
-
-  const location = useLocation();
-  const { formData } = location.state || {}; 
 
   const logactivity = useCallback((action) => {
     const logs = JSON.parse(localStorage.getItem(`test_${testId}_logs`)) || [];
@@ -97,19 +95,9 @@ const TestWindow = () => {
       const logs = JSON.parse(localStorage.getItem(`test_${testId}_logs`)) || [];
       const username = localStorage.getItem('username');
 
-      if (!formData) {
-        console.error("Form data not found!");
-        return;
-      }
-
-      const { centerId, deviceId, testLocation } = formData;
-
       const data = {
         username,
-        logs,
-        centerId,   
-        deviceId,  
-        testLocation 
+        logs
       };
 
       const response = await fetch(`${API_URL}/api/testlog/${testId}/logs`, {
@@ -121,7 +109,7 @@ const TestWindow = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to send logs and form data to the backend');
+        throw new Error('Failed to send logs to the backend');
       }
 
       localStorage.removeItem(`test_${testId}_deadline`);
