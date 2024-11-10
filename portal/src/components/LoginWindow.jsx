@@ -28,16 +28,17 @@ const LoginWindow = ({ onlogin }) => {
             if (!response.ok) {
                 alert(data.message);
             } else {
-                const { user } = data;
+                const user = data.data;
 
-                // Store individual properties
-                localStorage.setItem('userid', user._id);
-                localStorage.setItem('username', user.username);
-                localStorage.setItem('role', user.role);
-                localStorage.setItem('registered_tests', JSON.stringify(user.registered_tests));
-                localStorage.setItem('given_tests', JSON.stringify(user.given_tests));
+                // Store individual properties from the array response
+                localStorage.setItem('userid', user[0]); // User ID
+                localStorage.setItem('username', user[1]); // Username
+                localStorage.setItem('role', user[2]); // Role (can be null or 'admin')
+                localStorage.setItem('registered_tests', JSON.stringify(user[3])); // Registered tests array
+                localStorage.setItem('given_tests', JSON.stringify(user[4])); // Given tests array
 
-                if (user.role === 'admin') {
+                // Navigate based on role
+                if (user[2] === 'admin') {
                     navigate('/AdminDashboard');
                 } else {
                     navigate('/Dashboard');
