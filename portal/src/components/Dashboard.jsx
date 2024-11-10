@@ -29,7 +29,7 @@ const Dashboard = ({ onLogout }) => {
     useEffect(() => {
         const fetchDashboard = async () => {
             try {
-                const response = await fetch(`${API_URL}/api/tests/unregistered/upcoming`, {
+                const response = await fetch(`${API_URL}/api/get_test/tests/unregistered/upcoming`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
