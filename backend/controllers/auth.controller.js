@@ -12,7 +12,7 @@ const login = async (req, res) => {
   try {
     // Find user by username
     const user = await User.findOne({ username });
-
+    const data = [user.username, user.role, user.registered_tests, user.given_tests];
     // Check if user exists
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
@@ -26,7 +26,7 @@ const login = async (req, res) => {
     // Send user data as response (excluding sensitive data like password if necessary)
     res.json({
       message: 'Login successful',
-      user,
+      data, 
     });
   } catch (error) {
     console.error('Login error:', error);
