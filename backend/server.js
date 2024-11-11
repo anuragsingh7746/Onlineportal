@@ -7,6 +7,7 @@ const userRoutes = require('./routes/user.routes');
 const testRoutes = require('./routes/test.routes');
 const enrollmentRoutes = require('./routes/enrollment.routes');
 const take_testRoutes = require('./routes/take_test.routes');
+const logRoutes = require('./routes/submit.routes');
 dotenv.config();  
 
 const app = express();
@@ -22,6 +23,7 @@ app.use('/api/add', userRoutes);
 app.use('/api/get_tests', testRoutes);
 app.use('/api/enroll', enrollmentRoutes);
 app.use('/api/take_test', take_testRoutes);
+app.use('/api/submitTest', logRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
