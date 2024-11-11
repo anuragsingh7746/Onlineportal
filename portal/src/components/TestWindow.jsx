@@ -52,7 +52,6 @@ const TestWindow = () => {
           }),
         });
         const data = await response.json(); 
-        console.log(data);
         
         // Set questions based on the new response structure
         setQuestions(data.questions); 
@@ -63,8 +62,6 @@ const TestWindow = () => {
         if (!storedDeadline) {
           const newDeadline = Date.now() + data.duration * 60 * 1000; 
           localStorage.setItem(`test_${testId}_deadline`, newDeadline);
-          console.log(newDeadline);
-          console.log(Date.now());
           setTime(data.duration*60*1000);  
         } else {
           const remainingTime = storedDeadline - Date.now();
@@ -108,42 +105,42 @@ const TestWindow = () => {
 
   const submithandle = async () => {
     logactivity(`Submitted Test`);
-    // try {
-    //   const logs = JSON.parse(localStorage.getItem(`test_${testId}_logs`)) || [];
-    //   const username = localStorage.getItem('username');
+    try {
+      const logs = JSON.parse(localStorage.getItem(`test_${testId}_logs`)) || [];
+      const username = localStorage.getItem('username');
 
-    //   const data = {
-    //     username,
-    //     logs,
-    //   };
+      const data = {
+        username,
+        logs,
+      };
 
-    //   const response = await fetch(`${API_URL}/api/testlog/${testId}/logs`, {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify(data),
-    //   });
+      const response = await fetch(`${API_URL}/api/testlog/${testId}/logs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
 
-    //   if (!response.ok) {
-    //     throw new Error('Failed to send logs to the backend');
-    //   }
+      if (!response.ok) {
+        throw new Error('Failed to send logs to the backend');
+      }
 
       localStorage.removeItem(`test_${testId}_deadline`);
       localStorage.removeItem(`test_${testId}_selectedOptions`);
       localStorage.removeItem(`test_${testId}_logs`);
       localStorage.removeItem(`test_${testId}_teststarted`);
 
-    //   setQuestions([]);
-    //   setSelectedOptions([]);
-    //   setTime(0);
-    //   setCurrentQuestion(0);
+      setQuestions([]);
+      setSelectedOptions([]);
+      setTime(0);
+      setCurrentQuestion(0);
 
-    //   navigate('/Dashboard');
+      navigate('/Dashboard');
       
-    // } catch (error) {
-    //   console.error("Error during submission:", error);
-    // }
+    } catch (error) {
+      console.error("Error during submission:", error);
+    }
   };
 
   const handleOptionChange = (questionIndex, option) => {
