@@ -4,9 +4,17 @@
     padding: 40px;
     border-radius: 12px;
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-    width: 85%; /* Take the rest of the available space */
-    margin-left: 20px; /* Space between the side panel and question display */
+    width: 85%;
+    margin-left: 20px;
     box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+    .question-display {
+        width: 100%;
+        padding: 20px;
+        margin-left: 0;
+    }
 }
 
 /* Question text styling */
@@ -19,13 +27,19 @@
     line-height: 1.4;
 }
 
+@media (max-width: 768px) {
+    .question-text {
+        font-size: 1em;
+    }
+}
+
 /* Options container */
 .options {
     margin-top: 20px;
     margin-bottom: 25px;
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Space between options */
+    gap: 15px;
 }
 
 /* Single option styling */
@@ -39,7 +53,12 @@
     transition: border-color 0.3s ease, background-color 0.3s ease;
 }
 
-/* Label inside the option */
+@media (max-width: 768px) {
+    .option {
+        padding: 10px;
+    }
+}
+
 .option label {
     font-size: 1em;
     color: #34495e;
@@ -59,7 +78,6 @@
     position: relative;
 }
 
-/* Checked radio button style */
 .option input[type="radio"]:checked::before {
     content: '';
     display: block;
@@ -91,13 +109,15 @@
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-/* Hover effect for unclear button */
 .unclear-button:hover {
     background-color: #e67e22;
     transform: scale(1.05);
 }
 
-/* Focus style for inputs */
-.option input[type="radio"]:focus {
-    outline: 2px dashed #3498db;
+@media (max-width: 768px) {
+    .unclear-button {
+        width: 100%;
+        padding: 12px 20px;
+        font-size: 1em;
+    }
 }

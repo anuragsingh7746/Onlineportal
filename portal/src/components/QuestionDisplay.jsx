@@ -5,7 +5,7 @@ const QuestionDisplay = ({ question, currentQuestion, totalQuestions, selectedOp
   return (
     <div className="question-display">
       <h2>{`Question ${currentQuestion + 1} of ${totalQuestions}`}</h2>
-      <p className="question-text">{question.text}</p>
+      <p className="question-text">{question.question_text}</p>
       <div className="options">
         {question.options.map((option, index) => (
           <div key={index} className="option">

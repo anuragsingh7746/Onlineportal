@@ -1,15 +1,16 @@
 .dashboard-container {
     padding: 20px;
     font-family: Arial, sans-serif;
-    max-width: 2500px;
+    max-width: 100%;
     margin: 0 auto;
     background-color: #f9f9f9;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* Heading */
 .dashboard-heading {
-    font-size: 2.5em;
+    font-size: 2em;
     text-align: center;
     color: #333;
     margin-bottom: 20px;
@@ -22,7 +23,6 @@
     padding: 10px 20px;
     border-radius: 5px;
     cursor: pointer;
-    float: right;
     margin-top: -60px;
     transition: background-color 0.3s ease;
 }
@@ -31,19 +31,31 @@
     background-color: #ff1a1a;
 }
 
+/* Center logout button on small screens */
+@media (max-width: 768px) {
+    .logout-button {
+        float: none;
+        display: block;
+        margin: 10px auto 20px;
+        width: 100%;
+        text-align: center;
+    }
+}
+
 /* Tab Button Styling */
 .tab-buttons {
     display: flex;
     justify-content: center;
     margin-bottom: 20px;
+    flex-wrap: wrap;
 }
 
 .tab-buttons button {
     background-color: #ddd;
     color: #333;
     border: none;
-    padding: 10px 20px;
-    margin: 0 5px;
+    padding: 10px 15px;
+    margin: 5px;
     border-radius: 5px;
     font-size: 1em;
     cursor: pointer;
@@ -60,7 +72,7 @@
 }
 
 .sub-heading {
-    font-size: 1.8em;
+    font-size: 1.5em;
     color: #555;
     margin-bottom: 15px;
     text-align: center;
@@ -92,10 +104,18 @@
     color: #555;
 }
 
+/* Responsive Table */
+@media (max-width: 768px) {
+    .dashboard-table, .table-header, .table-cell {
+        font-size: 0.9em;
+        padding: 8px;
+    }
+}
+
 /* Button Styling */
 .take-test-button, .enroll-button, .completed-button {
     border: none;
-    padding: 10px 15px;
+    padding: 8px 12px;
     border-radius: 5px;
     font-size: 1em;
     cursor: pointer;
@@ -123,4 +143,14 @@
 .completed-button {
     background-color: #999;
     color: white;
+}
+
+/* Responsive Button Styling */
+@media (max-width: 768px) {
+    .take-test-button, .enroll-button, .completed-button {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        text-align: center;
+    }
 }

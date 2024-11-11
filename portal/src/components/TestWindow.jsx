@@ -3,7 +3,7 @@ import SidePanel from "./SidePanel";
 import QuestionDisplay from "./QuestionDisplay";
 import { useNavigate, useParams } from 'react-router-dom';
 import DisableBackButton from "./DisableBackButton";
-import "../styles/Testwindow.css"
+import "../styles/Testwindow.css";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000"; 
 
@@ -12,9 +12,10 @@ const TestWindow = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [loading, setLoading] = useState(true); 
   const { testId } = useParams();
-  const [time, setTime] = useState(0);
+  const [time, setTime] = useState(0); // Set default time if no time is provided
   const [selectedOptions, setSelectedOptions] = useState([]);
   const navigate = useNavigate();
+  const userId = localStorage.getItem('userid'); 
 
   const logactivity = useCallback((action) => {
     const logs = JSON.parse(localStorage.getItem(`test_${testId}_logs`)) || [];
@@ -40,16 +41,31 @@ const TestWindow = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/test/${testId}/questions`); 
+        const response = await fetch(`${API_URL}/api/take_test`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            userId: userId,
+            testId: testId,
+          }),
+        });
         const data = await response.json(); 
-        setQuestions(data.questionIds); 
+        console.log(data);
+        
+        // Set questions based on the new response structure
+        setQuestions(data.questions); 
         setLoading(false); 
 
+        // Initialize timer - example default time of 30 minutes
         let storedDeadline = localStorage.getItem(`test_${testId}_deadline`);
         if (!storedDeadline) {
-          const newDeadline = Date.now() + data.time * 60 * 1000; 
+          const newDeadline = Date.now() + data.duration * 60 * 1000; 
           localStorage.setItem(`test_${testId}_deadline`, newDeadline);
-          setTime(newDeadline - Date.now());  
+          console.log(newDeadline);
+          console.log(Date.now());
+          setTime(data.duration*60*1000);  
         } else {
           const remainingTime = storedDeadline - Date.now();
           if (remainingTime <= 0) {
@@ -60,9 +76,10 @@ const TestWindow = () => {
           }
         }
 
+        // Initialize selected options based on the number of questions
         const storedOptions = localStorage.getItem(`test_${testId}_selectedOptions`);
         if (!storedOptions) {
-          setSelectedOptions(Array(data.questionIds.length).fill(null));
+          setSelectedOptions(Array(data.questions.length).fill(null));
         } else {
           setSelectedOptions(JSON.parse(storedOptions));
         }
@@ -82,7 +99,7 @@ const TestWindow = () => {
     if (testId) {
       fetchQuestions();
     }
-  }, [testId, navigate, logactivity]);
+  }, [testId, navigate, logactivity, userId]);
 
   const handleQuestionChange = (index) => {
     setCurrentQuestion(index);
@@ -91,42 +108,42 @@ const TestWindow = () => {
 
   const submithandle = async () => {
     logactivity(`Submitted Test`);
-    try {
-      const logs = JSON.parse(localStorage.getItem(`test_${testId}_logs`)) || [];
-      const username = localStorage.getItem('username');
+    // try {
+    //   const logs = JSON.parse(localStorage.getItem(`test_${testId}_logs`)) || [];
+    //   const username = localStorage.getItem('username');
 
-      const data = {
-        username,
-        logs
-      };
+    //   const data = {
+    //     username,
+    //     logs,
+    //   };
 
-      const response = await fetch(`${API_URL}/api/testlog/${testId}/logs`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+    //   const response = await fetch(`${API_URL}/api/testlog/${testId}/logs`, {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify(data),
+    //   });
 
-      if (!response.ok) {
-        throw new Error('Failed to send logs to the backend');
-      }
+    //   if (!response.ok) {
+    //     throw new Error('Failed to send logs to the backend');
+    //   }
 
       localStorage.removeItem(`test_${testId}_deadline`);
       localStorage.removeItem(`test_${testId}_selectedOptions`);
       localStorage.removeItem(`test_${testId}_logs`);
       localStorage.removeItem(`test_${testId}_teststarted`);
 
-      setQuestions([]);
-      setSelectedOptions([]);
-      setTime(0);
-      setCurrentQuestion(0);
+    //   setQuestions([]);
+    //   setSelectedOptions([]);
+    //   setTime(0);
+    //   setCurrentQuestion(0);
 
-      navigate('/Dashboard');
+    //   navigate('/Dashboard');
       
-    } catch (error) {
-      console.error("Error during submission:", error);
-    }
+    // } catch (error) {
+    //   console.error("Error during submission:", error);
+    // }
   };
 
   const handleOptionChange = (questionIndex, option) => {
