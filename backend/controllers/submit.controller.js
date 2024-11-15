@@ -100,7 +100,7 @@ const submitTest = async (req, res) => {
 
     // Update average tables
     await AvgScoreCityWise.updateOne(
-      { test_id: testId, city: center.city },
+      { test_id: testId,state: center.state, city: center.city },
       { $inc: { score, no_of_students: 1 } },
       { upsert: true }
     );
@@ -112,7 +112,7 @@ const submitTest = async (req, res) => {
     );
 
     await AvgScoreCenterWise.updateOne(
-      { test_id: testId, center_id: centerId },
+      { test_id: testId, city: center.city, center_id: centerId },
       { $inc: { score, no_of_students: 1 } },
       { upsert: true }
     );

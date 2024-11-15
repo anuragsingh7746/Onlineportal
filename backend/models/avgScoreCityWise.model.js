@@ -9,6 +9,10 @@ const avgScoreCityWiseSchema = new Schema({
     ref: 'Test',
     required: true,
   },
+  state: {
+    type: String,
+    required: true,
+  },
   city: {
     type: String,
     required: true,

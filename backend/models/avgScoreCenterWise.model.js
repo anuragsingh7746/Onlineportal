@@ -9,6 +9,10 @@ const avgScoreCenterWiseSchema = new Schema({
     ref: 'Test',
     required: true,
   },
+  city: {
+    type: String,
+    required: true,
+  },
   center_id: {
     type: Schema.Types.ObjectId,
     ref: 'Center',

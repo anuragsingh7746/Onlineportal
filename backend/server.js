@@ -9,6 +9,7 @@ const enrollmentRoutes = require('./routes/enrollment.routes');
 const take_testRoutes = require('./routes/take_test.routes');
 const logRoutes = require('./routes/submit.routes');
 const avgTimeRoutes = require('./routes/avgTime.routes');
+const avgScoreRoutes = require('./routes/avgScore.routes');
 
 dotenv.config();  
 
@@ -27,6 +28,7 @@ app.use('/api/enroll', enrollmentRoutes);
 app.use('/api/take_test', take_testRoutes);
 app.use('/api/submitTest', logRoutes);
 app.use('/api/getAvgTime', avgTimeRoutes);
+app.use('/api/avgScore', avgScoreRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
