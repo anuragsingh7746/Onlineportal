@@ -12,15 +12,20 @@ const TestWindow = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [loading, setLoading] = useState(true); 
   const { testId } = useParams();
-  const [time, setTime] = useState(0); // Set default time if no time is provided
+  const [time, setTime] = useState(0); 
   const [selectedOptions, setSelectedOptions] = useState([]);
   const navigate = useNavigate();
   const userId = localStorage.getItem('userid'); 
 
-  const logactivity = useCallback((action) => {
+  // Updated logactivity function to accept a questionId parameter
+  const logactivity = useCallback((activityText, questionId = null) => {
     const logs = JSON.parse(localStorage.getItem(`test_${testId}_logs`)) || [];
     const timestamp = new Date().toISOString();
-    const entry = { action, timestamp };
+    const entry = { 
+      location: questionId,   // Set to null or question ID
+      timestamp, 
+      activity_text: activityText 
+    };
     logs.push(entry);
     localStorage.setItem(`test_${testId}_logs`, JSON.stringify(logs)); 
   }, [testId]);
@@ -28,15 +33,18 @@ const TestWindow = () => {
   useEffect(() => {
     const handleSwitch = () => {
       if (document.visibilityState === "hidden") {
-        logactivity(`Tab Switched`);
+        logactivity(`Tab Switched`, null); // Log leaving the test tab
+      } else if (document.visibilityState === "visible") {
+        logactivity(`Returned to Test Tab`, null); // Log returning to the test tab
       }
     };
-
+  
     window.addEventListener('visibilitychange', handleSwitch);
     return () => {
       window.removeEventListener('visibilitychange', handleSwitch);
     };
   }, [logactivity]);
+  
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -53,7 +61,6 @@ const TestWindow = () => {
         });
         const data = await response.json(); 
         
-        // Set questions based on the new response structure
         setQuestions(data.questions); 
         setLoading(false); 
 
@@ -81,11 +88,12 @@ const TestWindow = () => {
           setSelectedOptions(JSON.parse(storedOptions));
         }
 
+        // Log the "Test Started" activity with the first question ID
         const started = localStorage.getItem(`test_${testId}_teststarted`);
         if (!started) {
           const currtime = Date.now();
           localStorage.setItem(`test_${testId}_teststarted`, currtime);
-          logactivity(`Test Started`);
+          logactivity(`Test Started`, data.questions[0]?._id); // Log with the first question ID
         }
 
       } catch (error) {
@@ -100,57 +108,98 @@ const TestWindow = () => {
 
   const handleQuestionChange = (index) => {
     setCurrentQuestion(index);
-    logactivity(`Selected question ${index}`);
+    logactivity(`Selected question ${index}`, questions[index]?._id); // Log with the question ID
   };
 
   const submithandle = async () => {
-    logactivity(`Submitted Test`);
+    logactivity(`Submitted Test`, questions[questions.length - 1]?._id); // Log with the last question ID
     try {
       const logs = JSON.parse(localStorage.getItem(`test_${testId}_logs`)) || [];
-      const username = localStorage.getItem('username');
-
+      const userid = localStorage.getItem('userid');
+      const centerid = localStorage.getItem('center_id');
+  
       const data = {
-        username,
-        logs,
+        userId: userid,
+        testId: testId,
+        centerId : centerid,
+        logs: logs,
       };
-
-      const response = await fetch(`${API_URL}/api/testlog/${testId}/logs`, {
+  
+      const response = await fetch(`${API_URL}/api/submitTest`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       });
-
+  
+      // Parse the response JSON to extract message and score
+      const responseData = await response.json();
       if (!response.ok) {
         throw new Error('Failed to send logs to the backend');
       }
-
+  
+      // Clear localStorage for this test
       localStorage.removeItem(`test_${testId}_deadline`);
       localStorage.removeItem(`test_${testId}_selectedOptions`);
       localStorage.removeItem(`test_${testId}_logs`);
       localStorage.removeItem(`test_${testId}_teststarted`);
-
+  
+      // Clear local component state
       setQuestions([]);
       setSelectedOptions([]);
       setTime(0);
       setCurrentQuestion(0);
-
+  
+      // Log the score to confirm it is retrieved
+  
+      // Pass the score to handleCompleteTest function
+      handleCompleteTest(testId, responseData.score);
+  
       navigate('/Dashboard');
-      
     } catch (error) {
       console.error("Error during submission:", error);
     }
   };
+  
+
+  const handleCompleteTest = (testId, score) => {
+    // Extract registered and given tests from localStorage
+    const storedRegisteredTests = JSON.parse(localStorage.getItem('registered_tests')) || [];
+    const storedGivenTests = JSON.parse(localStorage.getItem('given_tests')) || [];
+
+    // Find the completed test in registered tests
+    const completedTest = storedRegisteredTests.find(test => test.test_id === testId);
+
+    if (completedTest) {
+        // Remove the completed test from registered tests
+        const updatedRegisteredTests = storedRegisteredTests.filter(test => test.test_id !== testId);
+        const newGivenTest = { 
+          test_id: completedTest.test_id, 
+          test_name: completedTest.test_name,
+          center_id: completedTest.center_id,
+          score,
+          city: completedTest.city,
+          state: completedTest.state,
+        };
+        // Add the completed test to given tests with the score
+
+
+        // Update localStorage
+        localStorage.setItem('registered_tests', JSON.stringify(updatedRegisteredTests));
+        localStorage.setItem('given_tests', JSON.stringify([...storedGivenTests, newGivenTest]));
+      }
+};
+
 
   const handleOptionChange = (questionIndex, option) => {
     const updatedOptions = [...selectedOptions];
     if (option === "unclear") {
       updatedOptions[questionIndex] = null;
-      logactivity(`Cleared option for question ${questionIndex}`);
+      logactivity(`Cleared option for question ${questionIndex}`, questions[questionIndex]?._id);
     } else {
       updatedOptions[questionIndex] = option;
-      logactivity(`Selected option ${option} for question ${questionIndex}`);
+      logactivity(`Selected option ${option} for question ${questionIndex}`, questions[questionIndex]?._id);
     }
     setSelectedOptions(updatedOptions);
     localStorage.setItem(`test_${testId}_selectedOptions`, JSON.stringify(updatedOptions));

@@ -47,6 +47,8 @@ const Dashboard = ({ onLogout }) => {
         }
     }, [tab, userid]);
 
+
+
     const handleEnroll = async (testId) => {
         try {
             const response = await fetch(`${API_URL}/api/enroll`, {
@@ -65,16 +67,10 @@ const Dashboard = ({ onLogout }) => {
             if (response.ok) {
                 alert(data.message || 'Enrolled successfully!');
                 
-                // Use the registered_test returned in the response
                 const { registered_test } = data;
-    
-                // Remove the test from availableTests
+
                 setAvailableTests(availableTests.filter(test => test._id !== testId));
-    
-                // Add the registered_test from the response to registeredTests
                 setRegisteredTests([...registeredTests, registered_test]);
-    
-                // Update registered tests in localStorage
                 localStorage.setItem('registered_tests', JSON.stringify([...registeredTests, registered_test]));
             } else {
                 alert(data.message || 'Failed to enroll.');
@@ -84,28 +80,19 @@ const Dashboard = ({ onLogout }) => {
         }
     };
 
-    const handleTakeTest = (testId) => {
+    const handleTakeTest = (testId, center_id) => {
+        localStorage.setItem('center_id', center_id);
         setSelectedTestId(testId);  
         setShowTestForm(true); 
     };
 
     const handleSubmitTestDetails = () => {
-        // Navigate to test-taking window
         navigate(`/TestWindow/${selectedTestId}`);
-        handleCompleteTest(selectedTestId);  // Move test to givenTests after completion
-    };
+        const updatedGivenTests = JSON.parse(localStorage.getItem('given_tests')) || [];
+        setGivenTests(updatedGivenTests);
 
-    const handleCompleteTest = (testId) => {
-        // Move test from registeredTests to givenTests
-        const completedTest = registeredTests.find(test => test.test_id === testId);
-        setRegisteredTests(registeredTests.filter(test => test.test_id !== testId));
-        setGivenTests([...givenTests, { ...completedTest, score: 0 }]); // Assume a default score of 0 or set as appropriate
-
-        // Update registered and given tests in localStorage
-        localStorage.setItem('registered_tests', JSON.stringify(registeredTests.filter(test => test.test_id !== testId)));
-        localStorage.setItem('given_tests', JSON.stringify([...givenTests, { ...completedTest, score: 0 }]));
-        
-        setShowTestForm(false);  // Close test details form
+        const updatedregisteredTests = JSON.parse(localStorage.getItem('registered_tests')) || [];
+        setGivenTests(updatedregisteredTests);
     };
 
     const handleCancelTest = () => {
@@ -179,7 +166,7 @@ const Dashboard = ({ onLogout }) => {
                                     <td className="table-cell">{test.city}</td>
                                     <td className="table-cell">{test.state}</td>
                                     <td className="table-cell">
-                                        <button className="take-test-button" onClick={() => handleTakeTest(test.test_id)}>Take Test</button>
+                                        <button className="take-test-button" onClick={() => handleTakeTest(test.test_id, test.center_id)}>Take Test</button>
                                     </td>
                                 </tr>
                             ))}
@@ -194,15 +181,19 @@ const Dashboard = ({ onLogout }) => {
                     <table className="dashboard-table">
                         <thead>
                             <tr>
-                                <th className="table-header">Test ID</th>
+                                <th className="table-header">Test Name</th>
                                 <th className="table-header">Score</th>
+                                <th className="table-header">City</th>
+                                <th className="table-header">State</th>
                             </tr>
                         </thead>
                         <tbody>
                             {givenTests.map((test, index) => (
                                 <tr key={index}>
-                                    <td className="table-cell">{test.test_id}</td>
+                                    <td className="table-cell">{test.test_name}</td>
                                     <td className="table-cell">{test.score}</td>
+                                    <td className="table-cell">{test.city}</td>
+                                    <td className="table-cell">{test.state}</td>
                                 </tr>
                             ))}
                         </tbody>

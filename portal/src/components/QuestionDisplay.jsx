@@ -12,16 +12,16 @@ const QuestionDisplay = ({ question, currentQuestion, totalQuestions, selectedOp
             <label>
               <input
                 type="radio"
-                value={option}
-                checked={selectedOption === option}
-                onChange={() => onOptionChange(option)}
+                value={index}
+                checked={selectedOption === index}
+                onChange={() => onOptionChange(index)} // Pass index instead of option
               />
               {option}
             </label>
           </div>
         ))}
       </div>
-      <button className="unclear-button" onClick={() => onOptionChange("unclear")}>Unclear</button>
+      <button className="unclear-button" onClick={() => onOptionChange(null)}>Unclear</button> {/* Use null for unclear */}
     </div>
   );
 };
