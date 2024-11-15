@@ -1,19 +1,26 @@
 import React, { useState, useEffect } from "react";
-import Chart from "chart.js/auto"; // Import chart library
+import { Bar } from "react-chartjs-2"; // Import the Bar chart component from react-chartjs-2
 import Dropdown from "./Dropdown"; // Custom dropdown component
 
 const AvgScoreTab = () => {
+    const [testOptions, setTestOptions] = useState([]);
     const [testId, setTestId] = useState(null);
     const [stateName, setStateName] = useState(null);
     const [cityName, setCityName] = useState(null);
 
     const [stateOptions, setStateOptions] = useState([]);
     const [cityOptions, setCityOptions] = useState([]);
+    const [chartData, setChartData] = useState(null);
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    const userid = localStorage.getItem("userid");
     const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
+    useEffect(() => {
+        fetchTests();
+    }, []);
 
     useEffect(() => {
         if (testId) {
@@ -21,11 +28,10 @@ const AvgScoreTab = () => {
             setCityName(null);
             fetchStates(testId);
         } else {
-            // Reset if no test is selected
             setStateOptions([]);
             setStateName(null);
             setCityName(null);
-            resetChart();
+            setChartData(null);
         }
     }, [testId]);
 
@@ -34,7 +40,6 @@ const AvgScoreTab = () => {
             setCityName(null);
             fetchCities(testId, stateName);
         } else if (testId) {
-            // If state is deselected, fetch states again
             fetchStates(testId);
         }
     }, [stateName]);
@@ -43,25 +48,68 @@ const AvgScoreTab = () => {
         if (cityName) {
             fetchCenters(testId, stateName, cityName);
         } else if (stateName) {
-            // If city is deselected, fetch cities again
             fetchCities(testId, stateName);
         }
     }, [cityName]);
+
+    const fetchTests = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/get_tests`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ userId: userid }),
+            });
+            if (!response.ok) {
+                throw new Error("Failed to fetch tests");
+            }
+            const data = await response.json();
+
+            if (Array.isArray(data)) {
+                setTestOptions(data.map((test) => ({ label: test.name, value: test._id })));
+            } else {
+                throw new Error("Invalid response format");
+            }
+        } catch (err) {
+            setError(err.message);
+            setTestOptions([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const fetchStates = async (testId) => {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch(`${API_BASE_URL}/tests/${testId}/states`);
+            const response = await fetch(`${API_BASE_URL}/api/avgScore`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ testId: testId, state: null, city: null }),
+            });
             if (!response.ok) {
                 throw new Error("Failed to fetch states");
             }
             const data = await response.json();
-            setStateOptions(data.map((item) => item.name));
-            renderChart(data, "state");
+
+            if (Array.isArray(data.data)) {
+                setStateOptions(data.data.map((state) => ({
+                    label: state.state,
+                    value: state.state,
+                })));
+                prepareChartData(data.data, "state");
+            } else {
+                throw new Error("Invalid response format for states");
+            }
         } catch (err) {
             setError(err.message);
-            resetChart();
+            setStateOptions([]);
+            setChartData(null);
         } finally {
             setLoading(false);
         }
@@ -71,18 +119,31 @@ const AvgScoreTab = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch(
-                `${API_BASE_URL}/tests/${testId}/states/${encodeURIComponent(stateName)}/cities`
-            );
+            const response = await fetch(`${API_BASE_URL}/api/avgScore`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ testId: testId, state: stateName, city: null }),
+            });
             if (!response.ok) {
                 throw new Error("Failed to fetch cities");
             }
             const data = await response.json();
-            setCityOptions(data.map((item) => item.name));
-            renderChart(data, "city");
+
+            if (Array.isArray(data.data)) {
+                setCityOptions(data.data.map((city) => ({
+                    label: city.city,
+                    value: city.city,
+                })));
+                prepareChartData(data.data, "city");
+            } else {
+                throw new Error("Invalid response format for cities");
+            }
         } catch (err) {
             setError(err.message);
-            resetChart();
+            setCityOptions([]);
+            setChartData(null);
         } finally {
             setLoading(false);
         }
@@ -92,59 +153,46 @@ const AvgScoreTab = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch(
-                `${API_BASE_URL}/tests/${testId}/states/${encodeURIComponent(
-                    stateName
-                )}/cities/${encodeURIComponent(cityName)}/centers`
-            );
+            const response = await fetch(`${API_BASE_URL}/api/avgScore`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ testId: testId, state: stateName, city: cityName }),
+            });
             if (!response.ok) {
                 throw new Error("Failed to fetch centers");
             }
             const data = await response.json();
-            renderChart(data, "center");
+
+            if (Array.isArray(data.data)) {
+                prepareChartData(data.data, "center");
+            } else {
+                throw new Error("Invalid response format for centers");
+            }
         } catch (err) {
             setError(err.message);
-            resetChart();
+            setChartData(null);
         } finally {
             setLoading(false);
         }
     };
 
-    const renderChart = (data, level) => {
-        // Prepare data for the chart
-        const chartData = {
-            labels: data.map((item) => item.name),
+    const prepareChartData = (data, level) => {
+        const labelKey = level === "state" ? "state" : level === "city" ? "city" : "center_id";
+
+        setChartData({
+            labels: data.map((item) => item[labelKey]),
             datasets: [
                 {
                     label: `Average Score by ${capitalizeFirstLetter(level)}`,
-                    data: data.map((item) => item.averageScore),
-                    backgroundColor: "rgba(75, 192, 192, 0.2)",
+                    data: data.map((item) => item.avg_score),
+                    backgroundColor: "rgba(75, 192, 192, 0.6)",
                     borderColor: "rgba(75, 192, 192, 1)",
                     borderWidth: 1,
                 },
             ],
-        };
-
-        // Destroy existing chart instance to prevent overlay
-        if (window.myChart instanceof Chart) {
-            window.myChart.destroy();
-        }
-
-        const ctx = document.getElementById("avgScoreChart").getContext("2d");
-        window.myChart = new Chart(ctx, {
-            type: "bar",
-            data: chartData,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-            },
         });
-    };
-
-    const resetChart = () => {
-        if (window.myChart instanceof Chart) {
-            window.myChart.destroy();
-        }
     };
 
     const capitalizeFirstLetter = (string) => {
@@ -157,7 +205,7 @@ const AvgScoreTab = () => {
             {error && <div style={{ color: "red" }}>Error: {error}</div>}
             <Dropdown
                 label="Select Test"
-                options={["Test 1", "Test 2", "Test 3"]}
+                options={testOptions}
                 value={testId || ""}
                 onChange={(value) => setTestId(value || null)}
             />
@@ -179,10 +227,33 @@ const AvgScoreTab = () => {
             )}
             {loading ? (
                 <div>Loading...</div>
-            ) : (
+            ) : chartData ? (
                 <div style={{ width: "100%", height: "500px" }}>
-                    <canvas id="avgScoreChart"></canvas>
+                    <Bar
+                        data={chartData}
+                        options={{
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: "Location",
+                                    },
+                                },
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: "Average Score",
+                                    },
+                                    beginAtZero: true,
+                                },
+                            },
+                        }}
+                    />
                 </div>
+            ) : (
+                <div>No data available</div>
             )}
         </div>
     );
