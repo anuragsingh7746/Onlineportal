@@ -9,6 +9,11 @@ const avgTimeSchema = new Schema({
     ref: 'Center',
     required: true,
   },
+  test_id: {
+    type: Schema.Types.ObjectId,
+    ref: 'Test',
+    required: true,
+  },
   question_id: {
     type: Schema.Types.ObjectId,
     ref: 'Question',

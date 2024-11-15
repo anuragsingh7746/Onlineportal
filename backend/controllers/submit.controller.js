@@ -120,7 +120,7 @@ const submitTest = async (req, res) => {
     // Update AvgTime model with time per question
     for (const entry of timeEntries) {
       await AvgTime.updateOne(
-        { center_id: centerId, question_id: entry.question_id },
+        { center_id: centerId, test_id: testId, question_id: entry.question_id },
         { $inc: { time: entry.time_spent, no_of_students: 1 } },
         { upsert: true }
       );

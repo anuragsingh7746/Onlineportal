@@ -18,7 +18,11 @@ const takeTest = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
     }
-
+  
+    if(user.role === "admin"){
+      const test = await Test.findById(testId);
+      return res.status(200).json({questions : test.questions});
+    }
     // Check if the user is enrolled in the test
     const isEnrolled = user.registered_tests.some(
       (test) => test.test_id.toString() === testId
