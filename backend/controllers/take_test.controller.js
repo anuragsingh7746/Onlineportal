@@ -40,7 +40,7 @@ const takeTest = async (req, res) => {
     // Check if the test start time is in the past or current time
     const currentTime = new Date();
     if (test.start_time > currentTime) {
-      return res.status(403).json({ message: 'Test is not yet available to take.' });
+      return res.status(403).json({ message: `Test will be available on ${test.start_time.toLocaleString()}. Please check back later.` });
     }
 
     // Fetch all questions for this test without including the correct answer

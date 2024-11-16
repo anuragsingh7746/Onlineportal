@@ -80,12 +80,32 @@ const Dashboard = ({ onLogout }) => {
         }
     };
 
-    const handleTakeTest = (testId, center_id) => {
-        localStorage.setItem('center_id', center_id);
-        setSelectedTestId(testId);  
-        setShowTestForm(true); 
+    const handleTakeTest = async (testId, center_id) => {
+        try {
+          const response = await fetch(`${API_URL}/api/take_test`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId: userid, testId }),
+          });
+      
+          if (!response.ok) {
+            const errorData = await response.json();
+            alert(errorData.message || 'Test is not yet available.');
+            return;
+          }
+      
+          
+          localStorage.setItem('center_id', center_id);
+          setSelectedTestId(testId);
+          setShowTestForm(true);
+        } catch (error) {
+          console.error('Error checking test availability:', error);
+          alert('An error occurred while trying to start the test. Please try again.');
+        }
     };
-
+      
     const handleSubmitTestDetails = () => {
         navigate(`/TestWindow/${selectedTestId}`);
         const updatedGivenTests = JSON.parse(localStorage.getItem('given_tests')) || [];
@@ -190,7 +210,7 @@ const Dashboard = ({ onLogout }) => {
                         <tbody>
                             {givenTests.map((test, index) => (
                                 <tr key={index}>
-                                    <td className="table-cell">{test.test_name}</td>
+                                    <td className="table-cell">{test._id}</td>
                                     <td className="table-cell">{test.score}</td>
                                     <td className="table-cell">{test.city}</td>
                                     <td className="table-cell">{test.state}</td>
