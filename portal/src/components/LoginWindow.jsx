@@ -11,6 +11,12 @@ const LoginWindow = ({ onlogin }) => {
 
     const handleLogin = async (event) => {
         event.preventDefault();
+    
+        if (!Username || !Password) {
+            alert('Username and Password are required.');
+            return;
+        }
+    
         try {
             const response = await fetch(`${API_URL}/api/auth/login`, {
                 method: 'POST',
@@ -22,34 +28,44 @@ const LoginWindow = ({ onlogin }) => {
                     password: Password,
                 }),
             });
-
+    
             const data = await response.json();
-
+    
             if (!response.ok) {
-                alert(data.message);
+                alert(data.message || 'Login failed. Please try again.');
             } else {
+                if (!data || !data.data) {
+                    alert('Unexpected response from the server.');
+                    return;
+                }
+    
                 const user = data.data;
-
-                // Store individual properties from the array response
-                localStorage.setItem('userid', user[0]); // User ID
-                localStorage.setItem('username', user[1]); // Username
-                localStorage.setItem('role', user[2]); // Role (can be null or 'admin')
-                localStorage.setItem('registered_tests', JSON.stringify(user[3])); // Registered tests array
-                localStorage.setItem('given_tests', JSON.stringify(user[4])); // Given tests array
-
+    
+                // Store individual properties from the object response
+                localStorage.setItem('userid', user.id || ''); // User ID
+                localStorage.setItem('username', user.username || ''); // Username
+                localStorage.setItem('role', user.role || ''); // Role (can be null or 'admin')
+                localStorage.setItem('registered_tests', JSON.stringify(user.registered_tests || [])); // Registered tests array
+                localStorage.setItem('given_tests', JSON.stringify(user.given_tests || [])); // Given tests array
+    
+                // console.log(localStorage.getItem('userid')); // Debugging
+                // console.log(localStorage.getItem('registered_tests')); // Debugging
+    
                 // Navigate based on role
-                if (user[2] === 'admin') {
+                if (user.role === 'admin') {
                     navigate('/AdminDashboard');
                 } else {
                     navigate('/Dashboard');
                 }
-
-                onlogin(); 
+    
+                onlogin();
             }
         } catch (error) {
             console.error('Error logging in:', error);
+            alert('An error occurred while trying to log in. Please try again.');
         }
     };
+    
 
     return (
         <div className="login-container">

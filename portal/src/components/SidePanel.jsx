@@ -1,9 +1,8 @@
-// SidePanel.jsx
 import React from "react";
 import Timer from "./timer";
 import "../styles/Sidepanel.css";
 
-const SidePanel = ({ questions, currentQuestion, onQuestionChange, time, submithandle}) => {
+const SidePanel = ({ questions, currentQuestion, onQuestionChange, time, submithandle, isSubmitting }) => {
   return (
     <div className="side-panel">
       <Timer time={time} submithandle={submithandle} />
@@ -31,7 +30,13 @@ const SidePanel = ({ questions, currentQuestion, onQuestionChange, time, submith
         )}
       </div>
       
-      <button className="submit-button" onClick={() => submithandle()}>Submit</button>
+      <button 
+        className="submit-button" 
+        onClick={() => submithandle()} 
+        disabled={isSubmitting} // Disable when submitting
+      >
+        {isSubmitting ? 'Submitting...' : 'Submit'}
+      </button>
     </div>
   );
 };

@@ -44,7 +44,7 @@ const AvgTimeTab = () => {
             labels,
             datasets: [
                 {
-                    label: "Average Time (minutes)",
+                    label: "Average Time (Seconds)",
                     data: avgTimes,
                     backgroundColor: "rgba(75, 192, 192, 0.6)",
                     borderColor: "rgba(75, 192, 192, 1)",

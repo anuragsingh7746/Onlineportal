@@ -1,32 +1,61 @@
-// controllers/auth.controller.js
 const User = require('../models/user.model');
+const Test = require('../models/test.model'); // Import the Test model
 
 const login = async (req, res) => {
   const { username, password } = req.body;
 
-  // Check if all required fields are present
   if (!username || !password) {
     return res.status(400).json({ message: 'Username and password are required.' });
   }
 
   try {
-    // Find user by username
     const user = await User.findOne({ username });
-    const data = [user._id, user.username, user.role, user.registered_tests, user.given_tests];
-    // Check if user exists
+
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
     }
 
-    // Validate password
     if (user.password !== password) {
       return res.status(401).json({ message: 'Invalid username or password.' });
     }
 
-    // Send user data as response (excluding sensitive data like password if necessary)
+    await user.populate({
+      path: 'registered_tests.test_id',
+      select: 'name',
+    });
+
+    await user.populate({
+      path: 'given_tests.test_id',
+      select: 'name',
+    });
+
+    const transformedRegisteredTests = user.registered_tests.map(test => ({
+      _id: test._id,
+      center_id: test.center_id,
+      city: test.city,
+      state: test.state,
+      test_name: test.test_id?.name || test.test_name,
+    }));
+
+    const transformedGivenTests = user.given_tests.map(test => ({
+      _id: test._id,
+      score: test.score,
+      city: test.city,
+      state: test.state,
+      test_name: test.test_id?.name, // Only include test_name
+    }));
+
+    const data = {
+      id: user._id,
+      username: user.username,
+      role: user.role,
+      registered_tests: transformedRegisteredTests,
+      given_tests: transformedGivenTests,
+    };
+
     res.json({
       message: 'Login successful',
-      data, 
+      data,
     });
   } catch (error) {
     console.error('Login error:', error);

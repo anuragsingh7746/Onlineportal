@@ -14,15 +14,15 @@ const TestWindow = () => {
   const { testId } = useParams();
   const [time, setTime] = useState(0); 
   const [selectedOptions, setSelectedOptions] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false); // <-- New state for submission control
   const navigate = useNavigate();
   const userId = localStorage.getItem('userid'); 
 
-  // Updated logactivity function to accept a questionId parameter
   const logactivity = useCallback((activityText, questionId = null) => {
     const logs = JSON.parse(localStorage.getItem(`test_${testId}_logs`)) || [];
     const timestamp = new Date().toISOString();
     const entry = { 
-      location: questionId,   // Set to null or question ID
+      location: questionId,
       timestamp, 
       activity_text: activityText 
     };
@@ -33,9 +33,9 @@ const TestWindow = () => {
   useEffect(() => {
     const handleSwitch = () => {
       if (document.visibilityState === "hidden") {
-        logactivity(`Tab Switched`, null); // Log leaving the test tab
+        logactivity(`Tab Switched`, null);
       } else if (document.visibilityState === "visible") {
-        logactivity(`Returned to Test Tab`, null); // Log returning to the test tab
+        logactivity(`Returned to Test Tab`, null);
       }
     };
   
@@ -64,7 +64,6 @@ const TestWindow = () => {
         setQuestions(data.questions); 
         setLoading(false); 
 
-        // Initialize timer - example default time of 30 minutes
         let storedDeadline = localStorage.getItem(`test_${testId}_deadline`);
         if (!storedDeadline) {
           const newDeadline = Date.now() + data.duration * 60 * 1000; 
@@ -80,7 +79,6 @@ const TestWindow = () => {
           }
         }
 
-        // Initialize selected options based on the number of questions
         const storedOptions = localStorage.getItem(`test_${testId}_selectedOptions`);
         if (!storedOptions) {
           setSelectedOptions(Array(data.questions.length).fill(null));
@@ -88,12 +86,11 @@ const TestWindow = () => {
           setSelectedOptions(JSON.parse(storedOptions));
         }
 
-        // Log the "Test Started" activity with the first question ID
         const started = localStorage.getItem(`test_${testId}_teststarted`);
         if (!started) {
           const currtime = Date.now();
           localStorage.setItem(`test_${testId}_teststarted`, currtime);
-          logactivity(`Test Started`, data.questions[0]?._id); // Log with the first question ID
+          logactivity(`Test Started`, data.questions[0]?._id);
         }
 
       } catch (error) {
@@ -108,11 +105,14 @@ const TestWindow = () => {
 
   const handleQuestionChange = (index) => {
     setCurrentQuestion(index);
-    logactivity(`Selected question ${index}`, questions[index]?._id); // Log with the question ID
+    logactivity(`Selected question ${index}`, questions[index]?._id);
   };
 
   const submithandle = async () => {
-    logactivity(`Submitted Test`, questions[questions.length - 1]?._id); // Log with the last question ID
+    if (isSubmitting) return; // prevent multiple submissions
+    setIsSubmitting(true); // start submission process
+
+    logactivity(`Submitted Test`, questions[questions.length - 1]?._id);
     try {
       const logs = JSON.parse(localStorage.getItem(`test_${testId}_logs`)) || [];
       const userid = localStorage.getItem('userid');
@@ -133,63 +133,57 @@ const TestWindow = () => {
         body: JSON.stringify(data),
       });
   
-      // Parse the response JSON to extract message and score
       const responseData = await response.json();
       if (!response.ok) {
         throw new Error('Failed to send logs to the backend');
       }
-  
+
       // Clear localStorage for this test
       localStorage.removeItem(`test_${testId}_deadline`);
       localStorage.removeItem(`test_${testId}_selectedOptions`);
       localStorage.removeItem(`test_${testId}_logs`);
       localStorage.removeItem(`test_${testId}_teststarted`);
-  
+
       // Clear local component state
       setQuestions([]);
       setSelectedOptions([]);
       setTime(0);
       setCurrentQuestion(0);
-  
-      // Log the score to confirm it is retrieved
-  
-      // Pass the score to handleCompleteTest function
-      handleCompleteTest(testId, responseData.score);
-  
+
+      // Update test status
+      await handleCompleteTest(testId, responseData.score);
+
+      // Navigate back to dashboard
       navigate('/Dashboard');
     } catch (error) {
       console.error("Error during submission:", error);
+      setIsSubmitting(false); // reset submission state on error
     }
   };
   
 
   const handleCompleteTest = (testId, score) => {
-    // Extract registered and given tests from localStorage
     const storedRegisteredTests = JSON.parse(localStorage.getItem('registered_tests')) || [];
     const storedGivenTests = JSON.parse(localStorage.getItem('given_tests')) || [];
 
     // Find the completed test in registered tests
-    const completedTest = storedRegisteredTests.find(test => test.test_id === testId);
+    const completedTest = storedRegisteredTests.find(test => test._id === testId);
 
     if (completedTest) {
-        // Remove the completed test from registered tests
-        const updatedRegisteredTests = storedRegisteredTests.filter(test => test.test_id !== testId);
-        const newGivenTest = { 
-          test_id: completedTest.test_id, 
-          test_name: completedTest.test_name,
-          center_id: completedTest.center_id,
-          score,
-          city: completedTest.city,
-          state: completedTest.state,
-        };
-        // Add the completed test to given tests with the score
+      // Remove the completed test from registered tests
+      const updatedRegisteredTests = storedRegisteredTests.filter(test => test._id !== testId);
+      const newGivenTest = { 
+        _id: completedTest._id, 
+        test_name: completedTest.test_name,
+        score: score,
+        city: completedTest.city,
+        state: completedTest.state,
+      };
 
-
-        // Update localStorage
-        localStorage.setItem('registered_tests', JSON.stringify(updatedRegisteredTests));
-        localStorage.setItem('given_tests', JSON.stringify([...storedGivenTests, newGivenTest]));
-      }
-};
+      localStorage.setItem('registered_tests', JSON.stringify(updatedRegisteredTests));
+      localStorage.setItem('given_tests', JSON.stringify([...storedGivenTests, newGivenTest]));
+    }
+  };
 
 
   const handleOptionChange = (questionIndex, option) => {
@@ -211,13 +205,14 @@ const TestWindow = () => {
 
   return (
     <div className="test-window" id="test-window">
-      <DisableBackButton />  
+      <DisableBackButton />
       <SidePanel
         questions={questions}
         currentQuestion={currentQuestion}
         onQuestionChange={handleQuestionChange}
         time={time}
         submithandle={submithandle}
+        isSubmitting={isSubmitting} // pass down to disable button
       />
     
       <QuestionDisplay

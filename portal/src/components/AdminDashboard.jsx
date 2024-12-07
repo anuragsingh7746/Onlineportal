@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import AvgScoreTab from "./AvgScoreTab";
 import AvgTimeTab from "./AvgTimeTab";
 import StudentLogsTab from "./StudentLogsTab";
+import FlaggedResultTab from "./FlaggedResultTab"; // Import the new tab
 import { useNavigate } from "react-router-dom";
 import "../styles/AdminDashboard.css";
 
@@ -18,10 +19,6 @@ const AdminDashboard = ({ onLogout }) => {
 
     return (
         <div className="admin-dashboard">
-            {/* Logout Button */}
-            
-
-            {/* Page Heading */}
             <h1>Admin Dashboard</h1>
 
             <button onClick={handleLogoutTotal} className="logout-button">
@@ -48,12 +45,19 @@ const AdminDashboard = ({ onLogout }) => {
                 >
                     Student Logs
                 </button>
+                <button
+                    onClick={() => setActiveTab("flaggedResults")}
+                    className={activeTab === "flaggedResults" ? "active-tab" : ""}
+                >
+                    Flagged Results
+                </button>
             </div>
 
             {/* Tab Content */}
             {activeTab === "avgScore" && <AvgScoreTab />}
             {activeTab === "avgTime" && <AvgTimeTab />}
             {activeTab === "studentLogs" && <StudentLogsTab />}
+            {activeTab === "flaggedResults" && <FlaggedResultTab />}
         </div>
     );
 };

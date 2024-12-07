@@ -11,6 +11,7 @@ const logRoutes = require('./routes/submit.routes');
 const avgTimeRoutes = require('./routes/avgTime.routes');
 const avgScoreRoutes = require('./routes/avgScore.routes');
 const studentRoutes = require('./routes/studentLogs.routes');
+const evaluateTest = require('./routes/flaggedResult.route');
 dotenv.config();  
 
 const app = express();
@@ -30,6 +31,7 @@ app.use('/api/submitTest', logRoutes);
 app.use('/api/getAvgTime', avgTimeRoutes);
 app.use('/api/avgScore', avgScoreRoutes);
 app.use('/api/studentLog', studentRoutes);
+app.use('/api/evaluate', evaluateTest);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
