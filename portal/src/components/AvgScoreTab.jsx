@@ -62,16 +62,16 @@ const AvgScoreTab = () => {
             }
             const data = await response.json();
 
-            if (Array.isArray(data)) {
-                const formattedTests = data.map((test) => ({
+            if (data && Array.isArray(data.tests)) {
+                const formattedTests = data.tests.map((test) => ({
                     label: test.name,
                     value: test._id,
                 }));
                 setTestOptions(formattedTests);
-                localStorage.setItem("tests", JSON.stringify(formattedTests)); // Cache the tests
+                localStorage.setItem("tests", JSON.stringify(formattedTests));
             } else {
                 throw new Error("Invalid response format");
-            }
+            }            
         } catch (err) {
             setError(err.message);
             setTestOptions([]);

@@ -13,7 +13,7 @@ import {
   Legend,
 } from 'chart.js';
 
-import "../styles/AvgTime.css"; // Import the updated CSS
+import "../styles/AvgTime.css";
 
 ChartJS.register(
   CategoryScale,
@@ -27,8 +27,12 @@ ChartJS.register(
 const AvgTimeTab = () => {
     const [testOptions, setTestOptions] = useState([]);
     const [testId, setTestId] = useState(null);
+
+    // For questions
     const [questionId, setQuestionId] = useState(null);
     const [questionOptions, setQuestionOptions] = useState([]);
+    const [selectedQuestionText, setSelectedQuestionText] = useState("");
+
     const [chartData, setChartData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -75,16 +79,16 @@ const AvgTimeTab = () => {
                 throw new Error("Failed to fetch tests");
             }
             const data = await response.json();
-            if (Array.isArray(data)) {
-                const formattedTests = data.map((test) => ({
+            if (data && Array.isArray(data.tests)) {
+                const formattedTests = data.tests.map((test) => ({
                     label: test.name,
                     value: test._id,
                 }));
                 setTestOptions(formattedTests);
-                localStorage.setItem("tests", JSON.stringify(formattedTests)); // Cache the tests
+                localStorage.setItem("tests", JSON.stringify(formattedTests));
             } else {
-                throw new Error("Invalid response format for tests");
-            }
+                throw new Error("Invalid response format");
+            }  
         } catch (err) {
             setError(err.message);
             setTestOptions([]);
@@ -114,12 +118,14 @@ const AvgTimeTab = () => {
                 const data = await response.json();
 
                 if (data.questions && Array.isArray(data.questions)) {
-                    setQuestionOptions(
-                        data.questions.map((q) => ({
-                            label: q,
-                            value: q,
-                        }))
-                    );
+                    // Transform questions into dropdown options
+                    // Example format: (Q1) This is question text
+                    const formattedQuestions = data.questions.map((q, i) => ({
+                        label: `(Q${i+1}) ${q.question_text}`,
+                        value: q._id,       // store question id
+                        originalText: q.question_text  // store original text if needed
+                    }));
+                    setQuestionOptions(formattedQuestions);
                 } else {
                     throw new Error("Invalid response format for questions");
                 }
@@ -174,6 +180,7 @@ const AvgTimeTab = () => {
         setQuestionOptions([]);
         setQuestionId(null);
         setChartData(null);
+        setSelectedQuestionText("");
     };
 
     useEffect(() => {
@@ -184,6 +191,7 @@ const AvgTimeTab = () => {
         if (testId) {
             fetchQuestions(testId);
             setQuestionId(null);
+            setSelectedQuestionText("");
         } else {
             resetQuestionOptions();
         }
@@ -191,11 +199,19 @@ const AvgTimeTab = () => {
 
     useEffect(() => {
         if (questionId) {
+            // Find the selected question text
+            const selectedQ = questionOptions.find(q => q.value === questionId);
+            if (selectedQ) {
+                setSelectedQuestionText(selectedQ.label); 
+            } else {
+                setSelectedQuestionText("");
+            }
             fetchAvgTimeData(testId, questionId);
         } else if (testId) {
+            setSelectedQuestionText("");
             setChartData(null);
         }
-    }, [questionId, fetchAvgTimeData, testId]);
+    }, [questionId, fetchAvgTimeData, testId, questionOptions]);
 
     return (
         <div className="avg-time-tab">
@@ -221,13 +237,30 @@ const AvgTimeTab = () => {
                 <div className="loading">Loading...</div>
             ) : chartData ? (
                 <div className="chart-container">
+                    {selectedQuestionText && <h3 className="selected-question">{selectedQuestionText}</h3>}
                     <Bar
                         data={chartData}
                         options={{
                             responsive: true,
                             maintainAspectRatio: false,
+                            scales: {
+                            x: {
+                                title: {
+                                display: true,
+                                text: "Location", // X-axis label
+                                },
+                            },
+                            y: {
+                                title: {
+                                display: true,
+                                text: "Average Time (Seconds)", // Y-axis label
+                                },
+                                beginAtZero: true,
+                            },
+                            },
                         }}
                     />
+
                 </div>
             ) : (
                 <div className="no-data">No data available</div>

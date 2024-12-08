@@ -23,6 +23,12 @@ const flaggedResultSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  summary: {
+    total_registered: { type: Number, default: 0 },
+    total_given: { type: Number, default: 0 },
+    total_not_given: { type: Number, default: 0 },
+    total_flagged: { type: Number, default: 0 },
+  },
 });
 
 module.exports = mongoose.model('FlaggedResult', flaggedResultSchema);

@@ -16,7 +16,6 @@ const StudentLogsTab = () => {
 
     const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
-    // Fetch students
     const fetchStudents = useCallback(async () => {
         const cachedStudents = localStorage.getItem("students");
         if (cachedStudents) {
@@ -38,13 +37,14 @@ const StudentLogsTab = () => {
                 throw new Error("Failed to fetch students");
             }
             const data = await response.json();
-            if (Array.isArray(data.student_ids)) {
-                const formattedStudents = data.student_ids.map((id) => ({
-                    label: id,
-                    value: id,
+            
+            if (Array.isArray(data.students)) {
+                const formattedStudents = data.students.map((student) => ({
+                    label: `${student.username} (${student.id})`,
+                    value: student.id,
                 }));
                 setStudentOptions(formattedStudents);
-                localStorage.setItem("students", JSON.stringify(formattedStudents)); // Cache the students
+                localStorage.setItem("students", JSON.stringify(formattedStudents));
             } else {
                 throw new Error("Invalid response format for students");
             }
@@ -56,7 +56,6 @@ const StudentLogsTab = () => {
         }
     }, [API_URL]);
 
-    // Fetch tests for a specific student
     const fetchTests = useCallback(async (studentId) => {
         setLoading(true);
         setError(null);
@@ -72,8 +71,13 @@ const StudentLogsTab = () => {
                 throw new Error("Failed to fetch tests");
             }
             const data = await response.json();
-            if (Array.isArray(data.test_ids)) {
-                setTestOptions(data.test_ids.map((id) => ({ label: id, value: id })));
+            // Now data.tests is an array of objects { test_id, test_name }
+            if (Array.isArray(data.tests)) {
+                const formattedTests = data.tests.map(t => ({
+                    label: t.test_name,
+                    value: t.test_id
+                }));
+                setTestOptions(formattedTests);
             } else {
                 throw new Error("Invalid response format for tests");
             }
@@ -85,7 +89,6 @@ const StudentLogsTab = () => {
         }
     }, [API_URL]);
 
-    // Fetch logs for a specific student and test
     const fetchLogs = useCallback(async (studentId, testId) => {
         setLoading(true);
         setError(null);
@@ -102,7 +105,13 @@ const StudentLogsTab = () => {
             }
             const data = await response.json();
 
-            const tabSwitchCount = data.logs[0]?.tab_switch || 0;
+            const logsArray = Array.isArray(data.logs) && data.logs.length > 0 ? data.logs : null;
+            let tabSwitchCount = 0;
+
+            if (logsArray) {
+                tabSwitchCount = logsArray[0]?.tab_switch || 0;
+            }
+
             setTabSwitchCount(tabSwitchCount);
             setLogsData(data);
         } catch (err) {
@@ -113,12 +122,10 @@ const StudentLogsTab = () => {
         }
     }, [API_URL]);
 
-    // Fetch students on component mount
     useEffect(() => {
         fetchStudents();
     }, [fetchStudents]);
 
-    // Fetch tests when a student is selected
     useEffect(() => {
         if (studentId) {
             fetchTests(studentId);
@@ -133,7 +140,6 @@ const StudentLogsTab = () => {
         }
     }, [studentId, fetchTests]);
 
-    // Fetch logs when both student and test are selected
     useEffect(() => {
         if (studentId && testId) {
             fetchLogs(studentId, testId);
@@ -144,7 +150,7 @@ const StudentLogsTab = () => {
     }, [testId, fetchLogs, studentId]);
 
     const getActivityStyle = (activity) => {
-        if (activity.includes("Tab Switched")) {
+        if (activity.includes("Tab Switched") || activity.includes("Returned to Test Tab")) {
             return "activity-tab-switch";
         }
         if (activity.includes("Test Started")) {
@@ -153,10 +159,71 @@ const StudentLogsTab = () => {
         if (activity.includes("Submitted Test")) {
             return "activity-test-submit";
         }
-        if (activity.includes("Returned to Test Tab")){
-            return "activity-tab-switch";
-        }
         return "activity-default";
+    };
+
+    const renderLogsContent = () => {
+        if (loading) {
+            return <div className="loading">Loading...</div>;
+        }
+
+        if (!loading && logsData && Array.isArray(logsData.logs) && logsData.logs.length > 0) {
+            const firstLog = logsData.logs[0];
+            return (
+                <div className="logs-container">
+                    <div className="score-section">
+                        <h3 className="sub-header">Test Score</h3>
+                        <p className="score">
+                            <strong>Score:</strong> {logsData.score}
+                        </p>
+                        {tabSwitchCount > 0 && (
+                            <p className="tab-switch">
+                                <strong>Tab Switches:</strong> {tabSwitchCount} times
+                            </p>
+                        )}
+                    </div>
+                    <div className="activity-section">
+                        <h3 className="sub-header">Activity Logs</h3>
+                        <ul className="activity-list">
+                            {Array.isArray(firstLog.logs) && firstLog.logs.map((log, index) => (
+                                <li
+                                    key={index}
+                                    className={`activity-item ${getActivityStyle(
+                                        log.activity_text
+                                    )}`}
+                                >
+                                    <div className="timestamp">
+                                        {new Date(log.timestamp).toLocaleString()}
+                                    </div>
+                                    <div className="activity-text">{log.activity_text}</div>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div className="time-section">
+                        <h3 className="sub-header">Time Spent on Questions</h3>
+                        <ul className="time-list">
+                            {Array.isArray(firstLog.times) && firstLog.times.map((time, index) => (
+                                <li key={index} className="time-item">
+                                    <div className="question-id">
+                                        Question ID: <strong>{time.question_id}</strong>
+                                    </div>
+                                    <div className="time-spent">
+                                        Time Spent: <strong>{time.time_spent.toFixed(2)}</strong> seconds
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+            );
+        }
+
+        if (!loading && !logsData && testId) {
+            return <div className="no-logs">No logs available for this test.</div>;
+        }
+
+        return null;
     };
 
     return (
@@ -179,59 +246,7 @@ const StudentLogsTab = () => {
                     />
                 )}
             </div>
-            {loading && <div className="loading">Loading...</div>}
-            {!loading && logsData && (
-                <div className="logs-container">
-                    <div className="score-section">
-                        <h3 className="sub-header">Test Score</h3>
-                        <p className="score">
-                            <strong>Score:</strong> {logsData.score}
-                        </p>
-                        {tabSwitchCount > 0 && (
-                            <p className="tab-switch">
-                                <strong>Tab Switches:</strong> {tabSwitchCount} seconds
-                            </p>
-                        )}
-                    </div>
-                    <div className="activity-section">
-                        <h3 className="sub-header">Activity Logs</h3>
-                        <ul className="activity-list">
-                            {logsData.logs[0].logs.map((log, index) => (
-                                <li
-                                    key={index}
-                                    className={`activity-item ${getActivityStyle(
-                                        log.activity_text
-                                    )}`}
-                                >
-                                    <div className="timestamp">
-                                        {new Date(log.timestamp).toLocaleString()}
-                                    </div>
-                                    <div className="activity-text">{log.activity_text}</div>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                    <div className="time-section">
-                        <h3 className="sub-header">Time Spent on Questions</h3>
-                        <ul className="time-list">
-                            {logsData.logs[0].times.map((time, index) => (
-                                <li key={index} className="time-item">
-                                    <div className="question-id">
-                                        Question ID: <strong>{time.question_id}</strong>
-                                    </div>
-                                    <div className="time-spent">
-                                        Time Spent: <strong>{time.time_spent.toFixed(2)}</strong>{" "}
-                                        seconds
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                </div>
-            )}
-            {!loading && !logsData && testId && (
-                <div className="no-logs">No logs available for this test.</div>
-            )}
+            {renderLogsContent()}
         </div>
     );
 };
