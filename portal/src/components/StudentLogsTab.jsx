@@ -71,7 +71,6 @@ const StudentLogsTab = () => {
                 throw new Error("Failed to fetch tests");
             }
             const data = await response.json();
-            // Now data.tests is an array of objects { test_id, test_name }
             if (Array.isArray(data.tests)) {
                 const formattedTests = data.tests.map(t => ({
                     label: t.test_name,
@@ -105,14 +104,33 @@ const StudentLogsTab = () => {
             }
             const data = await response.json();
 
-            const logsArray = Array.isArray(data.logs) && data.logs.length > 0 ? data.logs : null;
-            let tabSwitchCount = 0;
+            const logsArray = Array.isArray(data.logs) && data.logs.length > 0 ? data.logs[0].logs : null;
+            let tabSwitchDurations = [];
 
             if (logsArray) {
-                tabSwitchCount = logsArray[0]?.tab_switch || 0;
+                let lastTabSwitchTime = null;
+                logsArray.forEach((log) => {
+                    if (log && log.activity_text && log.activity_text.includes("Tab Switched")) {
+                        lastTabSwitchTime = new Date(log.timestamp);
+                    } else if (
+                        log &&
+                        log.activity_text &&
+                        log.activity_text.includes("Returned to Test Tab") &&
+                        lastTabSwitchTime
+                    ) {
+                        const returnedTime = new Date(log.timestamp);
+                        const duration = (returnedTime - lastTabSwitchTime) / 1000; // Time in seconds
+                        tabSwitchDurations.push(duration);
+                        lastTabSwitchTime = null; // Reset for the next tab switch
+                    }
+                });
             }
 
-            setTabSwitchCount(tabSwitchCount);
+            const totalTabSwitchTime = tabSwitchDurations.reduce((sum, time) => sum + time, 0);
+            //console.log("Tab Switch Durations:", tabSwitchDurations); // Debugging
+            //console.log("Total Tab Switch Time:", totalTabSwitchTime); // Debugging
+
+            setTabSwitchCount(totalTabSwitchTime); // Total time spent during tab switches
             setLogsData(data);
         } catch (err) {
             setError(err.message);
@@ -168,7 +186,7 @@ const StudentLogsTab = () => {
         }
 
         if (!loading && logsData && Array.isArray(logsData.logs) && logsData.logs.length > 0) {
-            const firstLog = logsData.logs[0];
+            const activityLogs = logsData.logs[0].logs; // Access the logs array of the first log entry
             return (
                 <div className="logs-container">
                     <div className="score-section">
@@ -176,16 +194,16 @@ const StudentLogsTab = () => {
                         <p className="score">
                             <strong>Score:</strong> {logsData.score}
                         </p>
-                        {tabSwitchCount > 0 && (
+                        {tabSwitchCount !== null && (
                             <p className="tab-switch">
-                                <strong>Tab Switches:</strong> {tabSwitchCount} times
+                                <strong>Total Time in Tab Switches:</strong> {tabSwitchCount.toFixed(2)} seconds
                             </p>
                         )}
                     </div>
                     <div className="activity-section">
                         <h3 className="sub-header">Activity Logs</h3>
                         <ul className="activity-list">
-                            {Array.isArray(firstLog.logs) && firstLog.logs.map((log, index) => (
+                            {Array.isArray(activityLogs) && activityLogs.map((log, index) => (
                                 <li
                                     key={index}
                                     className={`activity-item ${getActivityStyle(
@@ -203,16 +221,17 @@ const StudentLogsTab = () => {
                     <div className="time-section">
                         <h3 className="sub-header">Time Spent on Questions</h3>
                         <ul className="time-list">
-                            {Array.isArray(firstLog.times) && firstLog.times.map((time, index) => (
-                                <li key={index} className="time-item">
-                                    <div className="question-id">
-                                        Question ID: <strong>{time.question_id}</strong>
-                                    </div>
-                                    <div className="time-spent">
-                                        Time Spent: <strong>{time.time_spent.toFixed(2)}</strong> seconds
-                                    </div>
-                                </li>
-                            ))}
+                            {Array.isArray(logsData.logs[0].times) &&
+                                logsData.logs[0].times.map((time, index) => (
+                                    <li key={index} className="time-item">
+                                        <div className="question-id">
+                                            Question ID: <strong>{time.question_id}</strong>
+                                        </div>
+                                        <div className="time-spent">
+                                            Time Spent: <strong>{time.time_spent.toFixed(2)}</strong> seconds
+                                        </div>
+                                    </li>
+                                ))}
                         </ul>
                     </div>
                 </div>
