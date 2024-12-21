@@ -66,9 +66,7 @@ exports.evaluateTest = async (req, res) => {
     const totalNotGiven = totalRegistered - totalGiven;
 
     // Analyze Logs for Flagged Users
-    const logsForTest = await Log.find({ test_id: testId }).populate(
-      'test_id center_id logs.location times.question_id'
-    );
+    const logsForTest = await Log.find({ test_id: testId });
 
     const flaggedUsers = new Set();
     const centerFlags = {};
