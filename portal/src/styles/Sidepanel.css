@@ -1,22 +1,38 @@
 .side-panel {
-    background-color: #ffffff; /* Simple white background */
-    color: #333; /* Dark text for better contrast */
+    background-color: #ffffff;
+    color: #333;
     padding: 20px;
-    width: 15%; /* Adjusted width */
-    height: 100vh; /* Full viewport height */
+    width: 20%;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
+    box-sizing: border-box;
 }
 
+@media (max-width: 768px) {
+    .side-panel {
+        width: 100%;
+        height: auto;
+        padding: 15px;
+    }
+}
+
+/* Timer positioning within the side panel */
+.side-panel .timer-container {
+    margin-bottom: 20px; /* Adjust spacing as needed */
+    order: -1; /* Ensures the timer is placed at the top of the side panel */
+}
+
+/* Title and Content */
 .side-panel-title {
     font-size: 1.4em;
     margin-bottom: 20px;
     text-align: center;
     font-weight: bold;
-    color: #333; /* Ensure title text is visible */
+    color: #333;
 }
 
 .question-list {
@@ -32,8 +48,8 @@
 }
 
 .question-button {
-    background-color: #f8f8f8; /* Light background for buttons */
-    color: #333 !important; /* Dark text for visibility */
+    background-color: #f8f8f8;
+    color: #333 !important;
     border: 1px solid #ddd;
     padding: 10px 15px;
     border-radius: 5px;
@@ -45,18 +61,17 @@
 }
 
 .question-button.active {
-    background-color: #007bff !important; /* Blue background for active button */
-    color: #ffffff !important; /* White text for active button */
+    background-color: #007bff !important;
+    color: #ffffff !important;
     border: 1px solid #007bff !important;
 }
 
 .question-button:hover {
-    background-color: #e0e0e0 !important; /* Hover background */
-    color: #333 !important; /* Dark text on hover */
+    background-color: #e0e0e0 !important;
+    color: #333 !important;
     border: 1px solid #ddd;
 }
 
-/* Buttons at the bottom */
 .navigation-buttons {
     display: flex;
     justify-content: space-between;
@@ -64,8 +79,8 @@
 }
 
 .nav-button {
-    background-color: #007bff !important; /* Ensure blue background for nav button */
-    color: white !important; /* Ensure white text is visible */
+    background-color: #007bff !important;
+    color: white !important;
     border: none !important;
     padding: 10px 20px;
     border-radius: 5px;
@@ -74,14 +89,9 @@
     font-size: 1.1em;
 }
 
-.nav-button:hover {
-    background-color: #0056b3 !important; /* Darker blue on hover */
-    color: white !important; /* White text on hover */
-}
-
 .submit-button {
-    background-color: #28a745 !important; /* Ensure green background for submit */
-    color: white !important; /* Ensure white text for visibility */
+    background-color: #28a745 !important;
+    color: white !important;
     border: none !important;
     padding: 12px 20px;
     border-radius: 5px;
@@ -92,7 +102,9 @@
     transition: background-color 0.3s ease;
 }
 
-.submit-button:hover {
-    background-color: #218838 !important; /* Darker green on hover */
-    color: white !important; /* Ensure white text on hover */
+@media (max-width: 768px) {
+    .nav-button, .submit-button {
+        width: 100%;
+        margin-bottom: 10px;
+    }
 }
