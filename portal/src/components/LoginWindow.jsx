@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "../login.css";
 import { useNavigate } from "react-router-dom";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000"; 
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const LoginWindow = ({onlogin}) => {
     const [Username, setUSername] = useState('');
@@ -46,20 +46,20 @@ const LoginWindow = ({onlogin}) => {
                 <form onSubmit={handlelogin}>
                 <div className="input-group">
                     <label htmlFor="username">Username</label>
-                    <input 
-                        type="text" 
-                        id="username" 
-                        placeholder="Enter your username" 
+                    <input
+                        type="text"
+                        id="username"
+                        placeholder="Enter your username"
                         value={Username}
                         onChange={(e) => setUSername(e.target.value)}
                     />
                 </div>
                 <div className="input-group">
                     <label htmlFor="password">Password</label>
-                    <input 
-                        type="password" 
-                        id="password" 
-                        placeholder="Enter your password" 
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="Enter your password"
                         value = {Password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
